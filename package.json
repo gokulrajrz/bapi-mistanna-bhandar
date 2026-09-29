@@ -1,0 +1,45 @@
+{
+  "name": "assam-sweet-shop",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build && tsx scripts/seo.ts",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "dev:cloudflare": "npm run build && wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "seed:generate": "tsx scripts/seed.ts",
+    "format": "prettier --write src server shared workers functions scripts tests *.json *.ts README.md",
+    "test:e2e": "playwright test",
+    "check:bff": "tsc --noEmit -p tsconfig.bff.json",
+    "build:bff": "wrangler pages functions build functions --outdir /tmp/bapi-functions",
+    "test:cloudflare": "node scripts/smoke-cloudflare.mjs",
+    "deploy:maintenance": "wrangler deploy --config wrangler.maintenance.toml"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "@tanstack/react-query": "^5.90.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.9.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/workers-types": "^5.20260928.1",
+    "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.55.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.0",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.142.0"
+  }
+}

@@ -1,0 +1,6 @@
+name = "bapi-store-maintenance"
+main = "workers/maintenance.ts"
+compatibility_date = "2026-09-28"
+compatibility_flags = ["nodejs_compat"]
+[triggers]
+crons = ["*/5 * * * *"]

@@ -1,0 +1,11 @@
+DEMO_MODE=true
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=replace-locally-never-commit
+SITE_URL=https://your-domain.com
+CHECKOUT_ENABLED=false
+# ALLOWED_ORIGIN=https://your-domain.com
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
