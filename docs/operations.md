@@ -34,4 +34,10 @@ For an application-schema logical restore drill, provision an isolated local Sup
 
 ## Verification boundaries
 
-The non-demo browser suite uses isolated BFF and payment-widget fixtures. BFF integration tests execute real handlers against embedded PostgreSQL with auth/provider calls mocked. Before launch, repeat those workflows with actual Supabase, SMTP, Razorpay, Turnstile and Cloudflare Images credentials. Confirm customer-facing settings and record the provider-level restore result. Credentials, approved business details and account configuration remain external prerequisites.
+The non-demo browser suite uses isolated BFF and payment-widget fixtures. BFF integration tests execute real handlers against embedded PostgreSQL with auth/provider calls mocked. Before launch, repeat those workflows with actual Supabase, SMTP, Razorpay and Turnstile credentials. Confirm customer-facing settings and record the provider-level restore result. Credentials, approved business details and account configuration remain external prerequisites.
+
+## Catalogue image uploads
+
+Image transforms run as bundled WebAssembly inside the authenticated Pages upload endpoint. There is no image service binding or separate image Worker to deploy. Keep the `store-media` Supabase bucket private. JPEG/PNG/WebP sources must be at most 5 MB and 2 megapixels, with sides no larger than 4096 px; animated WebP and AVIF uploads are rejected. The endpoint bakes JPEG orientation into pixels and strips source metadata by encoding fresh WebP derivatives.
+
+Use Workers Paid CPU allowance for image uploads; the Free plan's 10 ms CPU allowance is insufficient for decoding/resizing/encoding photographs. Source dimensions are checked before decoding, WASM image allocations are released, and overlapping transforms in the same isolate return 429 rather than decoding multiple images concurrently. Retry an upload after a 429. A partial storage failure removes already-created derivatives before reporting failure. Test with actual shop photographs and inspect Functions CPU/error metrics after deployment.

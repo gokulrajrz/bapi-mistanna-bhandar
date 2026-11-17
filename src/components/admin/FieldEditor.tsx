@@ -324,7 +324,7 @@ export function FieldEditor({
             <input
               aria-label={`Upload ${pathLabel(path)}`}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
+              accept="image/jpeg,image/png,image/webp"
               disabled={busy || locked || isDemo}
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -333,6 +333,10 @@ export function FieldEditor({
               }}
             />
           </label>
+          <small>
+            JPEG, PNG or WebP · up to 5 MB and 2 megapixels. Images are resized
+            automatically.
+          </small>
           {isDemo && (
             <small>Uploads are available in the connected store.</small>
           )}

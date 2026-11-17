@@ -9,7 +9,6 @@ export const onRequestGet = endpoint(async (ctx) => {
     {
       operationalHealth: health.data,
       role: who.role,
-      imageProcessing: !!ctx.env.IMAGE_PROCESSOR,
       supabase: !!ctx.env.SUPABASE_URL,
       payments: !!ctx.env.RAZORPAY_KEY_ID && !!ctx.env.RAZORPAY_KEY_SECRET,
       webhook: !!ctx.env.RAZORPAY_WEBHOOK_SECRET,
