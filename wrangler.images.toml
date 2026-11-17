@@ -1,0 +1,6 @@
+name = "bapi-image-processor"
+main = "workers/images.ts"
+compatibility_date = "2026-09-28"
+workers_dev = false
+[images]
+binding = "IMAGES"

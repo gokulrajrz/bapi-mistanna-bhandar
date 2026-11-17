@@ -347,6 +347,7 @@ function AdminWorkspace({
             <div className="admin-status-grid">
               {[
                 ["supabase", "Database connection"],
+                ["imageProcessing", "Responsive image processing"],
                 ["payments", "Payment provider"],
                 ["webhook", "Webhook verification"],
                 ["turnstile", "Checkout protection"],

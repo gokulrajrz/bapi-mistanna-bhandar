@@ -541,7 +541,7 @@ test("health failure stays unknown and a failed heartbeat is explicit", async ({
   await setup(page, { healthFail: true });
   await page.goto("/admin");
   await expect(page.getByText("Unable to check", { exact: true })).toHaveCount(
-    5,
+    6,
   );
   await page.unroute("**/api/**");
   await setup(page);

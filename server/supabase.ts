@@ -11,6 +11,7 @@ export type Env = {
   RAZORPAY_WEBHOOK_SECRET?: string;
   TURNSTILE_SECRET_KEY?: string;
   TURNSTILE_SITE_KEY?: string;
+  IMAGE_PROCESSOR?: { fetch: typeof fetch };
   ASSETS?: { fetch: typeof fetch };
 };
 export type Context = {

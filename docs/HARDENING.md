@@ -9,7 +9,7 @@ The app uses React and TanStack Query with Cloudflare Pages Functions as the exc
 - Admin customer profiles, staff notes, addresses and order history; configurable logo/favicon, page copy, gifting cards and box sizes.
 - Product-specific storage, freshness and cross-contact information; illustrative-product disclosures confined to demo mode.
 - Complete metadata replacement during client navigation, including canonical, Open Graph, robots and structured data.
-- Pages Functions uses bundled WebAssembly to decode JPEG/PNG/WebP and generate responsive WebP uploads, with pre-decode size/dimension checks and cleanup after partial storage failures. No image-processing service binding is required.
+- Internal Cloudflare Images Worker generates responsive WebP uploads through the BFF, with cleanup after partial storage failures.
 - Self-hosted fonts, compressed catalogue images, early product-image loading, reduced initial JavaScript and stable loading layouts.
 - Fixed a PostgreSQL rate-limit parameter/column ambiguity exposed by real BFF integration tests.
 - Maintenance heartbeat, admin queue-health indicators, minimal public health endpoint and an optional scheduled health-check workflow.
@@ -42,14 +42,6 @@ Admin UI audit remediation:
 
 **30 September follow-up fixes:** all five recorded gaps now have targeted regression coverage. Dirty/pending forms block React Router navigation; variant moves normalize persisted sort numbers; Store/settings revisions reject stale synchronized writes; customer-history pages use a unique tie-breaker and distinguish empty accounts from empty pages. Apply migration 017 before this release. See the [audit resolution](ADMIN-UI-AUDIT.md#follow-up-resolution--30-september-2026).
 
-## Pages image processing — 17 November 2026
-
-Image uploads now decode and resize with Photon WebAssembly and encode WebP at quality 82 with libwebp WebAssembly, all inside Pages Functions. The separate image Worker, service binding, deployment script and configuration card have been removed. The scheduled commerce maintenance Worker remains independent.
-
-JPEG/PNG/WebP uploads are limited to 5 MB, 2 megapixels and 4096 px per side before decoding. JPEG orientation is applied before encoding fresh metadata-free derivatives. AVIF and animated WebP uploads are rejected. A per-isolate processing guard prevents overlapping decode allocations; partial Storage writes are cleaned up. This implementation needs Workers Paid CPU allowance for uploads, rather than a Cloudflare Images subscription.
-
-Real-codec and upload-handler tests cover all three input formats, output decoding/dimensions, orientation, malformed files, oversized headers, WebP canvas/frame mismatch, authorization/origin/rate limits, concurrent processing and Storage rollback. The current unit/database/BFF suite has 87 passing tests. Local workerd processed repeated 2-megapixel photographs, including rotated JPEGs; Photon's linear memory stayed at approximately 56 MiB in those runs. This is a local measurement, not a guarantee of total production memory or CPU use. The Functions bundle plus both WASM binaries measured approximately 1.06 MB gzip. Both Wrangler 4 and the Pages build service's Wrangler 3.114.17 bundled the WASM successfully. Live uploads against the deployed Supabase bucket remain an acceptance check.
-
 ## Verification performed on 30 September 2026
 
 - **75 tests passed**, including embedded PostgreSQL migrations/transactions, actual BFF handlers, stock conflicts, cart resolution, metadata, image transformation and an embedded database backup/restore.
@@ -74,7 +66,7 @@ Run `npm run preview` and `npm run audit:performance` to reproduce. Reports are 
 
 The configured Supabase project returned a missing-table response for the product catalogue. Migrations 001–017 have been validated locally, but have **not** been applied to that project. `npm run db:bundle` prepares the SQL for a fresh project; it does not execute it. Existing projects must apply only their unapplied migrations.
 
-Live acceptance still needs database setup, initial-owner bootstrap, merchant credentials, SMTP/Turnstile configuration and maintenance Worker deployment. Image uploads need sufficient Pages Functions CPU allowance, not Cloudflare Images enablement. Real gateway payments/refunds, email delivery, external alert delivery and provider-level backup restoration have not been verified. The embedded restore test is separate from the unexecuted provider/database restore drill.
+Live acceptance still needs database setup, initial-owner bootstrap, merchant credentials, SMTP/Turnstile configuration, Cloudflare Images enablement and Worker deployment. Real gateway payments/refunds, email delivery, external alert delivery and provider-level backup restoration have not been verified. The embedded restore test is separate from the unexecuted provider/database restore drill.
 
 The business must confirm opening hours, phone, delivery/pickup rules, actual stock, catalogue claims, imagery and policies before enabling checkout. The address is confirmed. Infrastructure secrets remain in Cloudflare; the admin panel controls business settings. Transactional order email/SMS, tax invoices, courier/accounting integrations and partial refunds remain outside the implemented feature set. See the operations runbook for launch acceptance and recovery procedures.
 
