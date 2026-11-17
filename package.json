@@ -54,6 +54,6 @@
     "wrangler": "^4.143.0"
   },
   "overrides": {
-    "undici": "^7.29.1"
+    "undici": "7.30.2"
   }
 }
