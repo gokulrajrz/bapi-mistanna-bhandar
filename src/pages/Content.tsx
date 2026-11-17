@@ -1,3 +1,4 @@
+import { StorySequence } from "../components/StorySequence";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -14,25 +15,21 @@ export function Story() {
   return (
     <>
       <section className="story-hero section">
-        <span className="eyebrow">ROOTED IN ASSAM</span>
+        <span className="eyebrow">{content.storefront.pages.storyEyebrow}</span>
         <h1>{content.storefront.storyTitle}</h1>
-        <p>Sweetness is a language we’ve always known.</p>
+        <p>{content.storefront.pages.storySubtitle}</p>
         <Photo src={content.storefront.heroImage} alt="Mithai from Assam" />
       </section>
       <section className="story-body section">
         <Flower2 size={46} strokeWidth={1} />
-        <h2>From our side of the table.</h2>
+        <h2>{content.storefront.pages.storySectionTitle}</h2>
         {content.storefront.storyParagraphs.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
-        <div className="making-sequence">
-          {["Milk", "Sugar", "Fire", "Time", "Sweetness"].map((word, i) => (
-            <div key={word}>
-              <small>0{i + 1}</small>
-              <h3>{word}</h3>
-            </div>
-          ))}
-        </div>
+        <StorySequence
+          steps={content.storefront.pages.makingSteps}
+          motion={content.storefront.experience.storyMotion}
+        />
         <Link className="button" to="/shop">
           A taste of our story <ArrowUpRight size={17} />
         </Link>
@@ -46,7 +43,7 @@ export function Gifts() {
   return (
     <div className="section">
       <div className="page-intro">
-        <span className="eyebrow">ASSAM, IN A BOX</span>
+        <span className="eyebrow">{content.storefront.pages.giftsEyebrow}</span>
         <h1>{content.storefront.giftsTitle}</h1>
         <p>{content.storefront.giftsDescription}</p>
       </div>
@@ -56,53 +53,33 @@ export function Gifts() {
           alt="Mithai for thoughtful gifting"
         />
         <div>
-          <span className="eyebrow">A GIFT WITH A LITTLE MORE HEART</span>
-          <h2>
-            Their favourites.
-            <br />
-            Your thoughtful touch.
-          </h2>
-          <p>
-            Choose the sweets, add a personal message, and make a little room
-            for joy.
-          </p>
+          <span className="eyebrow">
+            {content.storefront.pages.giftsFeatureEyebrow}
+          </span>
+          <h2>{content.storefront.pages.giftsFeatureTitle}</h2>
+          <p>{content.storefront.pages.giftsFeatureDescription}</p>
           <Link className="button" to="/build-a-box">
             Make it personal <ArrowUpRight size={17} />
           </Link>
         </div>
       </div>
       <div className="gifting-types">
-        {[
-          ["Personal", "For the just-because moments.", "/build-a-box"],
-          [
-            "Wedding",
-            "For new beginnings, beautifully shared.",
-            "/store?enquiry=wedding",
-          ],
-          [
-            "Corporate",
-            "For the people who make it happen.",
-            "/store?enquiry=corporate",
-          ],
-          [
-            "Festivals",
-            "Familiar flavours for coming together.",
-            "/shop?occasion=festival",
-          ],
-        ].map(([title, text, to]) => (
-          <Link
-            className={
-              params.get("type") === title.toLowerCase() ? "selected" : ""
-            }
-            to={to}
-            key={title}
-          >
-            <Flower2 size={32} strokeWidth={1} />
-            <h2>{title}</h2>
-            <p>{text}</p>
-            <ArrowUpRight />
-          </Link>
-        ))}
+        {content.storefront.pages.giftingCards.map(
+          ({ title, description, to, image }) => (
+            <Link
+              className={
+                params.get("type") === title.toLowerCase() ? "selected" : ""
+              }
+              to={to}
+              key={title}
+            >
+              <Photo src={image} alt={title} />
+              <h2>{title}</h2>
+              <p>{description}</p>
+              <ArrowUpRight />
+            </Link>
+          ),
+        )}
       </div>
     </div>
   );
@@ -112,9 +89,11 @@ export function Journal() {
   return (
     <div className="section">
       <div className="page-intro">
-        <span className="eyebrow">FROM OUR SIDE OF THE TABLE</span>
-        <h1>The sweet journal.</h1>
-        <p>Culture, craft, and little things worth slowing down for.</p>
+        <span className="eyebrow">
+          {content.storefront.pages.journalEyebrow}
+        </span>
+        <h1>{content.storefront.pages.journalTitle}</h1>
+        <p>{content.storefront.pages.journalDescription}</p>
       </div>
       <div className="journal-grid">
         {content.posts.map((a) => (

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { useCart } from "../lib/cart";
 import { useCreateOrder } from "../lib/queries";
-import { checkoutSchema } from "../lib/commerce";
+import { contactSchema as checkoutSchema } from "../../shared/validation";
 import { isDemo, orders } from "../lib/api";
 import { money } from "../lib/config";
 import { useStoreContent } from "../lib/content";
@@ -41,12 +41,23 @@ export default function Checkout() {
     email: "",
     phone: "",
     address: "",
-    pincode: "",
-    method: "delivery",
-    date: cart.items.find((i) => i.gift?.date)?.gift?.date || "",
-    coupon: "",
+    pincode: cart.delivery.pincode,
+    method: cart.delivery.method,
+    date:
+      cart.delivery.date ||
+      cart.items.find((i) => i.gift?.date)?.gift?.date ||
+      "",
+    coupon: cart.delivery.coupon,
     message: "",
   }));
+  useEffect(() => {
+    cart.setDelivery({
+      method: form.method,
+      pincode: form.pincode,
+      date: form.date,
+      coupon: form.coupon,
+    });
+  }, [form.method, form.pincode, form.date, form.coupon, cart.setDelivery]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const account = useQuery({
     queryKey: ["account", session.data?.user?.id],

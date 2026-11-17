@@ -1,6 +1,6 @@
 import { config } from "./config";
 import type { CartItem, Product } from "./types";
-export { contactSchema as checkoutSchema } from "../../shared/validation";
+
 export function totals(
   items: CartItem[],
   method = "delivery",

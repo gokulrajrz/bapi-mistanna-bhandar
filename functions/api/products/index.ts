@@ -1,3 +1,4 @@
+import { ratingSummaries } from "../../../server/ratings";
 import { z } from "zod";
 import { db } from "../../../server/supabase";
 import { endpoint, response, rpcError, HttpError } from "../../../server/http";
@@ -23,7 +24,14 @@ export const onRequestGet = endpoint(async (ctx) => {
     filters: parsed.data,
   });
   rpcError(error);
-  const res = response(data);
+  const ratings = await ratingSummaries(
+    ctx.env,
+    data.items.map((p: { id: string }) => p.id),
+  );
+  const res = response({
+    ...data,
+    items: data.items.map((p: { id: string }) => ({ ...p, ...ratings[p.id] })),
+  });
   res.headers.set(
     "Cache-Control",
     "public, max-age=15, s-maxage=30, stale-while-revalidate=60",

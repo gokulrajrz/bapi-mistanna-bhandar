@@ -70,11 +70,13 @@ export function Dialog({
   children,
   onClose,
   drawer = false,
+  className = "",
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   drawer?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -92,8 +94,11 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className={drawer ? "dialog drawer" : "dialog"}
-      onCancel={onClose}
+      className={`${drawer ? "dialog drawer" : "dialog"} ${className}`}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -102,6 +107,7 @@ export function Dialog({
       <div className="dialog-head">
         <h2>{title}</h2>
         <button
+          type="button"
           className="icon-button"
           onClick={onClose}
           aria-label="Close dialog"

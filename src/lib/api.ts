@@ -1,5 +1,5 @@
 import { seedProducts } from "../data/products";
-import { checkoutSchema, filterProducts, totals, boxPrice } from "./commerce";
+import { filterProducts, totals, boxPrice } from "./commerce";
 import { api } from "./request";
 import type {
   CartItem,
@@ -9,6 +9,8 @@ import type {
   Product,
   ProductPage,
   Quote,
+  ReviewPage,
+  ReviewCursor,
 } from "./types";
 export const isDemo = import.meta.env.VITE_DEMO_MODE !== "false";
 export const catalogue = {
@@ -50,26 +52,22 @@ export const catalogue = {
   },
   async reviews(
     id: string,
+    cursor: ReviewCursor | null = null,
     signal?: AbortSignal,
-  ): Promise<
-    {
-      id: string;
-      name: string;
-      rating: number;
-      body: string;
-      created_at: string;
-      verified: boolean;
-    }[]
-  > {
+  ): Promise<ReviewPage> {
+    const params = cursor
+      ? `?${new URLSearchParams({ before: cursor.createdAt, beforeId: cursor.id })}`
+      : "";
     return isDemo
-      ? []
-      : api(`/api/reviews/${encodeURIComponent(id)}`, { signal });
+      ? { items: [], nextCursor: null }
+      : api(`/api/reviews/${encodeURIComponent(id)}${params}`, { signal });
   },
 };
 const demoQuotes = new Map<string, Quote>();
 export const orders = {
   async quote(input: { items: CartItem[]; contact: Checkout }): Promise<Quote> {
-    checkoutSchema.parse(input.contact);
+    const { contactSchema } = await import("../../shared/validation");
+    contactSchema.parse(input.contact);
     if (!isDemo)
       return api("/api/quote", { method: "POST", body: JSON.stringify(input) });
     if (!input.items.length) throw new Error("Your bag is empty.");

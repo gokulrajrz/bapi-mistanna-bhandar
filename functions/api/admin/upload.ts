@@ -57,15 +57,38 @@ export const onRequestPost = endpoint(async (ctx) => {
           : new TextDecoder().decode(bytes.slice(4, 8)) === "ftyp";
   if (!valid)
     throw new HttpError(400, "Image contents do not match the file type.");
-  const ext = file.type.split("/")[1];
-  const path = `catalogue/${crypto.randomUUID()}.${ext}`;
-  const { error } = await db(ctx.env)
-    .storage.from("store-media")
-    .upload(path, bytes, { contentType: file.type, upsert: false });
-  if (error)
+  if (!ctx.env.IMAGE_PROCESSOR)
     throw new HttpError(
       503,
-      "Image upload failed. Check that the store-media bucket exists.",
+      "Image processing is not configured. Connect the Cloudflare image service before uploading.",
     );
-  return response({ url: `/api/media/${path}` }, who, 201);
+  const base = `catalogue/${crypto.randomUUID()}`;
+  const uploaded: string[] = [];
+  const storage = db(ctx.env).storage.from("store-media");
+  try {
+    for (const width of [320, 640, 1280]) {
+      const transformed = await ctx.env.IMAGE_PROCESSOR.fetch(
+        `https://images.internal/?width=${width}`,
+        { method: "POST", body: bytes, headers: { "Content-Type": file.type } },
+      );
+      if (!transformed.ok)
+        throw new HttpError(
+          422,
+          "This image could not be processed. Choose a valid photograph.",
+        );
+      const path = `${base}-${width}.webp`;
+      const { error } = await storage.upload(
+        path,
+        await transformed.arrayBuffer(),
+        { contentType: "image/webp", upsert: false },
+      );
+      if (error)
+        throw new HttpError(503, "Image storage failed. Please try again.");
+      uploaded.push(path);
+    }
+  } catch (e) {
+    if (uploaded.length) await storage.remove(uploaded);
+    throw e;
+  }
+  return response({ url: `/api/media/${base}-1280.webp` }, who, 201);
 });

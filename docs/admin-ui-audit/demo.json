@@ -1,0 +1,343 @@
+{
+  "screens": [
+    {
+      "name": "320-overview",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "320-products",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "320-settings",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "320-orders",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "320-customers",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "320-admin_users",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-overview",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-products",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-settings",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-orders",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-customers",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "390-admin_users",
+      "metrics": {
+        "w": 390,
+        "scroll": 390,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-overview",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-products",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-settings",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-orders",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-customers",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "768-admin_users",
+      "metrics": {
+        "w": 768,
+        "scroll": 768,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-overview",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-products",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-settings",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-orders",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-customers",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "1440-admin_users",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": null,
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "storefront-editor",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": {
+          "client": 618,
+          "scroll": 618,
+          "height": 18811,
+          "inputs": 172
+        },
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "product-editor",
+      "metrics": {
+        "w": 1440,
+        "scroll": 1440,
+        "dialog": {
+          "client": 618,
+          "scroll": 618,
+          "height": 4642,
+          "inputs": 45
+        },
+        "smallTargets": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "mobile-product-editor",
+      "metrics": {
+        "w": 320,
+        "scroll": 320,
+        "dialog": {
+          "client": 280,
+          "scroll": 280,
+          "height": 5783,
+          "inputs": 45
+        },
+        "smallTargets": 0
+      },
+      "violations": []
+    }
+  ],
+  "experiments": [
+    {
+      "case": "add-price",
+      "type": "text"
+    },
+    {
+      "case": "price-error",
+      "alert": [
+        "experience.prices.3: Invalid input: expected number, received string"
+      ]
+    },
+    {
+      "case": "footer-column",
+      "linksFields": 1,
+      "tail": "<input id=\"_r_6p_\" type=\"text\" value=\"\">"
+    },
+    {
+      "case": "box-size-error",
+      "alert": [
+        "boxSizes.4: Invalid input: expected number, received string"
+      ]
+    },
+    {
+      "case": "empty-object-array-readd",
+      "alert": [
+        "pages.giftingCards.0: Invalid input: expected object, received string"
+      ]
+    },
+    {
+      "case": "ids-editable",
+      "fields": [
+        {
+          "value": "sweet-1",
+          "readOnly": false
+        },
+        {
+          "value": "sweet-1-0",
+          "readOnly": false
+        },
+        {
+          "value": "sweet-1-1",
+          "readOnly": false
+        },
+        {
+          "value": "sweet-1-2",
+          "readOnly": false
+        }
+      ]
+    },
+    {
+      "case": "escape-discards",
+      "name": "Kaju Katli"
+    }
+  ]
+}

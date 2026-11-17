@@ -1,0 +1,17 @@
+name: Store health
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+jobs:
+  check:
+    if: ${{ vars.STORE_ORIGIN != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-health.mjs
+        env:
+          STORE_ORIGIN: ${{ vars.STORE_ORIGIN }}

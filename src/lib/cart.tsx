@@ -1,4 +1,10 @@
 import {
+  readDeliveryPreferences,
+  saveDeliveryPreferences,
+  emptyDelivery,
+  type DeliveryPreferences,
+} from "./delivery-preferences";
+import {
   createContext,
   useContext,
   useState,
@@ -7,6 +13,8 @@ import {
 } from "react";
 import type { CartItem } from "./types";
 const CartContext = createContext<null | {
+  delivery: DeliveryPreferences;
+  setDelivery: (value: DeliveryPreferences) => void;
   items: CartItem[];
   add: (item: CartItem) => void;
   update: (key: string, quantity: number) => void;
@@ -32,6 +40,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
+  const [delivery, setDelivery] = useState(readDeliveryPreferences);
+  useEffect(() => saveDeliveryPreferences(delivery), [delivery]);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     try {
@@ -44,6 +54,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        delivery,
+        setDelivery,
         open,
         setOpen,
         add: (item) => {
@@ -73,7 +85,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     : i,
                 ),
           ),
-        clear: () => setItems([]),
+        clear: () => {
+          setItems([]);
+          setDelivery({ ...emptyDelivery });
+        },
         replace: (items) => setItems(items),
       }}
     >

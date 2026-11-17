@@ -1,3 +1,5 @@
+import { adminList } from "../../../server/admin-list";
+import { storefrontExtra } from "../../../shared/storefront-extra";
 import { homeContent } from "../../../shared/home-content";
 import { z } from "zod";
 import { db } from "../../../server/supabase";
@@ -17,7 +19,7 @@ import {
   throttle,
 } from "../../../server/http";
 const resources = new Set([
-  ...Object.keys(resourceSchemas),
+  ...Object.keys(resourceSchemas).filter((key) => key !== "customers"),
   "settings",
   "refund_jobs",
   "admin_audit",
@@ -31,33 +33,8 @@ export const onRequestGet = endpoint(async (ctx) => {
     who.role !== "owner"
   )
     throw new HttpError(403, "Owner access required.");
-  let q = db(ctx.env)
-    .from(resource)
-    .select(
-      resource === "products" ? "*,product_variants(*),inventory(*)" : "*",
-      { count: "exact" },
-    );
-  const page = Math.max(
-    1,
-    Number(new URL(ctx.request.url).searchParams.get("page")) || 1,
-  );
-  q = q
-    .range((page - 1) * 50, page * 50 - 1)
-    .order(
-      resource === "products"
-        ? "sort_order"
-        : resource === "settings"
-          ? "key"
-          : resource === "admin_users"
-            ? "user_id"
-            : resource === "coupons"
-              ? "code"
-              : resource === "blog_posts"
-                ? "slug"
-                : "id",
-    );
-  const { data, error, count } = await q;
-  rpcError(error);
+  const result = await adminList(ctx, resource, who.userId!);
+  const data = result.items;
   if (resource === "settings")
     for (const row of (data || []) as unknown as {
       key: string;
@@ -65,10 +42,15 @@ export const onRequestGet = endpoint(async (ctx) => {
     }[])
       if (row.key === "storefront")
         row.value = {
+          ...storefrontExtra,
           ...row.value,
+          pages: {
+            ...storefrontExtra.pages,
+            ...((row.value.pages as object) || {}),
+          },
           home: { ...homeContent, ...row.value.home },
         };
-  return response({ items: data, total: count, page, pageSize: 50 }, who);
+  return response({ ...result, items: data }, who);
 });
 export const onRequestPut = endpoint(async (ctx) => {
   originGuard(ctx);
@@ -84,12 +66,13 @@ export const onRequestPut = endpoint(async (ctx) => {
       z.object({
         key: z.enum(["public", "commerce", "storefront", "operations"]),
         value: z.unknown(),
+        revision: z.number().int().nonnegative().default(0),
       }),
     );
     const parsed = settingsSchemas[input.key].safeParse(input.value);
     if (!parsed.success)
       throw new HttpError(400, parsed.error.issues[0].message);
-    document = { key: input.key, value: parsed.data };
+    document = { key: input.key, value: parsed.data, revision: input.revision };
     if (
       input.key === "public" &&
       (parsed.data as { launchApproved?: boolean }).launchApproved
@@ -106,7 +89,7 @@ export const onRequestPut = endpoint(async (ctx) => {
           "Publish your address, phone, hours, and delivery/refund/privacy policies before approving launch.",
         );
     }
-  } else if (resource in resourceSchemas) {
+  } else if (resource in resourceSchemas && resource !== "customers") {
     if (resource === "admin_users" && who.role !== "owner")
       throw new HttpError(403, "Owner access required.");
     document = await body(
@@ -118,6 +101,22 @@ export const onRequestPut = endpoint(async (ctx) => {
     resource,
     document,
     actor_id: who.userId,
+  });
+  rpcError(error);
+  return response(data, who);
+});
+
+export const onRequestDelete = endpoint(async (ctx) => {
+  originGuard(ctx);
+  await throttle(ctx, "admin-write", 60);
+  const who = await admin(ctx);
+  if (ctx.params.resource !== "admin_users")
+    throw new HttpError(404, "Resource not found.");
+  if (who.role !== "owner") throw new HttpError(403, "Owner access required.");
+  const input = await body(ctx.request, z.object({ user_id: z.uuid() }));
+  const { data, error } = await db(ctx.env).rpc("revoke_admin_access", {
+    actor_id: who.userId,
+    target: input.user_id,
   });
   rpcError(error);
   return response(data, who);

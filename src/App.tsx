@@ -1,3 +1,4 @@
+import { PageMeta } from "./components/PageMeta";
 import { CartSync } from "./components/CartSync";
 import { useStoreContent } from "./lib/content";
 import { ErrorState } from "./components/ui";
@@ -31,37 +32,6 @@ const Policies = lazy(() =>
 const AccountPage = lazy(() => import("./pages/Account"));
 const OrderPage = lazy(() => import("./pages/Order"));
 const AdminPage = lazy(() => import("./pages/Admin"));
-function PageMeta() {
-  const { pathname } = useLocation();
-  const { content } = useStoreContent();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    const title =
-      pathname === "/"
-        ? "The taste of Assam"
-        : pathname.split("/").filter(Boolean).at(-1)?.replaceAll("-", " ") ||
-          "";
-    document.title = `${title.charAt(0).toUpperCase() + title.slice(1)} | ${content.settings.name}`;
-    let canonical = document.querySelector<HTMLLinkElement>(
-      'link[rel="canonical"]',
-    );
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.append(canonical);
-    }
-    canonical.href = config.site + pathname;
-    const description = document.querySelector<HTMLMetaElement>(
-      'meta[name="description"]',
-    );
-    if (description) description.content = content.storefront.seoDescription;
-    const ogTitle = document.querySelector<HTMLMetaElement>(
-      'meta[property="og:title"]',
-    );
-    if (ogTitle) ogTitle.content = document.title;
-  }, [pathname, content.settings.name, content.storefront.seoDescription]);
-  return null;
-}
 export default function App() {
   const location = useLocation();
   const { content, isPending, isError, refetch } = useStoreContent();

@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useStoreContent } from "../lib/content";
+import { availableVariant } from "../lib/products";
 import { Photo } from "./Photo";
 import { Link } from "react-router-dom";
 import { Plus, ArrowUpRight } from "lucide-react";
@@ -9,7 +12,10 @@ import { productQueries } from "../lib/queries";
 export function ProductCard({ product: p }: { product: Product }) {
   const { add } = useCart();
   const client = useQueryClient();
-  const v = p.variants[0];
+  const v = availableVariant(p);
+  const { content } = useStoreContent();
+  const [added, setAdded] = useState(false);
+  if (!v) return null;
   return (
     <article className="product-card">
       <Link
@@ -18,10 +24,18 @@ export function ProductCard({ product: p }: { product: Product }) {
         onMouseEnter={() => client.prefetchQuery(productQueries.detail(p.slug))}
       >
         <Photo src={p.image} srcSet={p.imageSrcSet} alt={p.name} />
-        {p.category === "Assamese specialties" && (
-          <span className="badge">A TASTE OF ASSAM</span>
-        )}
-        {p.id === "sweet-1" && <span className="badge">THE CLASSIC</span>}
+        {content.storefront.experience.badges
+          .filter((b) =>
+            b.productId
+              ? b.productId === p.id
+              : b.category && b.category === p.category,
+          )
+          .slice(0, 1)
+          .map((b) => (
+            <span key={b.label} className="badge">
+              {b.label}
+            </span>
+          ))}
         <span className="image-arrow">
           <ArrowUpRight size={19} />
         </span>
@@ -30,11 +44,26 @@ export function ProductCard({ product: p }: { product: Product }) {
         <Link to={`/products/${p.slug}`}>
           <h3>{p.name}</h3>
         </Link>
-        <span className="vegetarian" title="Vegetarian">
-          ●
-        </span>
+        {(p.tags.includes("vegetarian") || p.tags.includes("vegan")) && (
+          <span
+            className="vegetarian"
+            title={
+              p.tags.includes("vegan") ? "Vegan ingredients" : "Vegetarian"
+            }
+          >
+            ●
+          </span>
+        )}
       </div>
       <p>{p.description}</p>
+      {!!p.ratingCount && (
+        <small
+          className="product-rating"
+          aria-label={`${p.ratingAverage} out of 5 from ${p.ratingCount} reviews`}
+        >
+          ★ {p.ratingAverage} · {p.ratingCount} reviews
+        </small>
+      )}
       <div className="product-bottom">
         <div>
           {money(v.price)} <span>/ {v.label}</span>
@@ -43,7 +72,8 @@ export function ProductCard({ product: p }: { product: Product }) {
           className="add-button"
           disabled={!v.stock}
           aria-label={`Add ${p.name} to bag`}
-          onClick={() =>
+          onClick={() => {
+            setAdded(true);
             add({
               key: v.id,
               productId: p.id,
@@ -53,10 +83,10 @@ export function ProductCard({ product: p }: { product: Product }) {
               label: v.label,
               price: v.price,
               quantity: 1,
-            })
-          }
+            });
+          }}
         >
-          {v.stock ? "ADD" : "SOLD OUT"}
+          {v.stock ? (added ? "✓ ADDED" : "ADD") : "SOLD OUT"}
           <Plus size={14} />
         </button>
       </div>

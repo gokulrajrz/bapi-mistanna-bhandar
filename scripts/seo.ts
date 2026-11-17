@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { loadEnv } from "vite";
 import { seedProducts } from "../src/data/products";
 const env = { ...loadEnv("production", process.cwd(), ""), ...process.env };
@@ -10,7 +10,17 @@ const escape = (s: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
-const template = readFileSync("dist/index.html", "utf8");
+const assets = readdirSync("dist/assets");
+const fonts = assets.filter((f) => f.endsWith(".woff2"));
+const template = readFileSync("dist/index.html", "utf8").replace(
+  "</head>",
+  fonts
+    .map(
+      (f) =>
+        `<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/${f}">`,
+    )
+    .join("") + "</head>",
+);
 const pages = [
   [
     "/",
@@ -100,7 +110,18 @@ for (const [path, title, description] of pages) {
       url: origin + "/store",
     });
   const metadata = `<meta name="description" content="${escape(description)}"/><link rel="canonical" href="${escape(origin + path)}"/><meta property="og:title" content="${escape(title + " | " + name)}"/><meta property="og:description" content="${escape(description)}"/><meta property="og:type" content="${product ? "product" : "website"}"/><meta property="og:url" content="${escape(origin + path)}"/><meta property="og:image" content="${escape(origin)}/images/hero.webp"/><script type="application/ld+json">${JSON.stringify(schema).replaceAll("<", "\\u003c")}</script>${env.VITE_DEMO_MODE !== "false" ? '<meta name="robots" content="noindex,nofollow"/>' : ""}`;
+  const atlas = product
+    ? /sweet-\d\.webp$/.test(product.image)
+      ? "/images/sweets.webp"
+      : product.image.split("#")[0]
+    : null;
+  const preloads = atlas
+    ? `<link rel="preload" as="image" href="${atlas}" imagesrcset="${atlas.replace(".webp", "-small.webp")} 1x, ${atlas} 2x" fetchpriority="high">`
+    : path === "/"
+      ? `<link rel="preload" as="image" href="/images/hero-small.webp" imagesrcset="/images/hero-small.webp 768w, /images/hero.webp 1536w" imagesizes="(max-width: 540px) 100vw, 56vw" fetchpriority="high">`
+      : "";
   const html = template
+    .replace("</head>", preloads + "</head>")
     .replace(
       /<title>.*?<\/title>/,
       `<title>${escape(title + " | " + name)}</title>`,

@@ -1,10 +1,6 @@
+import { contactSchema as checkoutSchema } from "../shared/validation";
 import { describe, it, expect } from "vitest";
-import {
-  boxPrice,
-  filterProducts,
-  totals,
-  checkoutSchema,
-} from "../src/lib/commerce";
+import { boxPrice, filterProducts, totals } from "../src/lib/commerce";
 import { seedProducts } from "../src/data/products";
 import { orderRequestSchema } from "../server/checkout-schema";
 const item = {

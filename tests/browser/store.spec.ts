@@ -16,7 +16,7 @@ test("shopping, persistent cart, variants, validated demo checkout", async ({
       .getByRole("dialog")
       .getByRole("heading", { name: "Kaju Katli", exact: true }),
   ).toBeVisible();
-  await page.getByRole("link", { name: /Checkout ·/ }).click();
+  await page.getByRole("link", { name: "Continue to checkout" }).click();
   await page.getByRole("button", { name: "Review my order" }).click();
   await expect(page.getByText("Enter your full name.")).toBeVisible();
   await page.getByLabel("Full name").fill("Test Customer");
@@ -75,7 +75,7 @@ test("product variants update cart price", async ({ page }) => {
   await expect(page.getByRole("dialog")).toContainText("500 g");
   await expect(page.getByRole("dialog")).toContainText("₹948");
 });
-for (const width of [320, 390, 768, 1440])
+for (const width of [320, 375, 390, 430, 768, 1440, 1920])
   test(`no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     for (const path of [
@@ -84,6 +84,9 @@ for (const width of [320, 390, 768, 1440])
       "/products/kaju-katli",
       "/build-a-box",
       "/gifts",
+      "/account",
+      "/checkout",
+      "/admin?section=settings",
     ]) {
       await page.goto(path);
       await page.waitForTimeout(100);
@@ -114,16 +117,18 @@ test("admin edits validated settings and product variants in preview", async ({
     .getByRole("row")
     .filter({ has: page.getByText("storefront", { exact: true }) });
   await row.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.getByRole("button", { name: "Hero", exact: true }).click();
   await page
-    .getByRole("textbox", { name: "Hero Title", exact: true })
+    .getByRole("textbox", { name: "Hero title", exact: true })
     .fill("A sweet welcome.");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByRole("status")).toContainText(
     "Saved in this admin preview only",
   );
   await row.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.getByRole("button", { name: "Hero", exact: true }).click();
   await expect(
-    page.getByRole("textbox", { name: "Hero Title", exact: true }),
+    page.getByRole("textbox", { name: "Hero title", exact: true }),
   ).toHaveValue("A sweet welcome.");
   await page.getByRole("button", { name: "Close dialog" }).click();
   await page
@@ -134,7 +139,59 @@ test("admin edits validated settings and product variants in preview", async ({
     .filter({ hasText: "Kaju Katli" })
     .getByRole("button", { name: "Edit", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "Packs & pricing", exact: true })
+    .click();
   await expect(
-    page.getByLabel("Available packs (excludes reservations)").first(),
+    page.getByLabel("Available packs", { exact: true }).first(),
   ).toBeVisible();
+});
+
+test("cart estimates delivery, discounts and total, and clears stale estimates", async ({
+  page,
+}) => {
+  await page.goto("/products/kaju-katli");
+  await page.getByRole("button", { name: "Add to bag", exact: true }).click();
+  const bag = page.getByRole("dialog");
+  await bag.getByLabel("Pincode", { exact: true }).fill("786001");
+  await bag.getByLabel("Coupon (optional)").fill("SWEET10");
+  await bag.getByRole("button", { name: "Calculate total" }).click();
+  await expect(bag.getByText("Estimated total", { exact: true })).toBeVisible();
+  await expect(bag.getByText("Demo estimate", { exact: false })).toBeVisible();
+  await bag.getByLabel("Coupon (optional)").fill("INVALID");
+  await expect(bag.getByText("Estimated total", { exact: true })).toHaveCount(
+    0,
+  );
+  await bag.getByRole("button", { name: "Calculate total" }).click();
+  await expect(bag.getByRole("alert")).toContainText("invalid");
+});
+
+test("cart delivery preferences carry into checkout and survive reload", async ({
+  page,
+}) => {
+  await page.goto("/products/kaju-katli");
+  await page.getByRole("button", { name: "Add to bag", exact: true }).click();
+  const bag = page.getByRole("dialog");
+  await bag.getByLabel("Pincode", { exact: true }).fill("786001");
+  await bag.getByLabel("Preferred date", { exact: true }).fill("2099-01-01");
+  await bag.getByLabel("Coupon (optional)").fill("SWEET10");
+  await bag.getByLabel("Fulfilment").selectOption("pickup");
+  await bag.getByRole("link", { name: "Continue to checkout" }).click();
+  await expect(
+    page.getByRole("radio", { name: "I’ll pick it up" }),
+  ).toBeChecked();
+  await expect(page.getByLabel("Pickup date", { exact: true })).toHaveValue(
+    "2099-01-01",
+  );
+  await expect(page.getByLabel("Coupon code", { exact: true })).toHaveValue(
+    "SWEET10",
+  );
+  await page.reload();
+  await expect(
+    page.getByRole("radio", { name: "I’ll pick it up" }),
+  ).toBeChecked();
+  await page.getByRole("radio", { name: "Deliver to my door" }).check();
+  await expect(page.getByLabel("Pincode", { exact: true })).toHaveValue(
+    "786001",
+  );
 });

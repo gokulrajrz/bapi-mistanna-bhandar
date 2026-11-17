@@ -40,10 +40,10 @@ export async function onRequest(
     );
     headers.set("Cache-Control", "public, max-age=0, s-maxage=30");
     if (!metadata.index) headers.set("X-Robots-Tag", "noindex, nofollow");
-    const html = `<title>${escapeHtml(metadata.title)}</title><meta name="description" content="${escapeHtml(metadata.description)}"><link rel="canonical" href="${escapeHtml(metadata.url)}"><meta property="og:title" content="${escapeHtml(metadata.title)}"><meta property="og:description" content="${escapeHtml(metadata.description)}"><meta property="og:url" content="${escapeHtml(metadata.url)}"><meta property="og:image" content="${escapeHtml(metadata.image)}"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(metadata.schemas).replaceAll("<", "\\u003c")}</script>`;
+    const html = `${metadata.preload ? `<link rel="preload" as="image" href="${escapeHtml(metadata.preload)}" fetchpriority="high">` : ""}<link rel="icon" href="${escapeHtml(metadata.favicon)}"><title>${escapeHtml(metadata.title)}</title><meta name="description" content="${escapeHtml(metadata.description)}"><link rel="canonical" href="${escapeHtml(metadata.url)}"><meta property="og:title" content="${escapeHtml(metadata.title)}"><meta property="og:description" content="${escapeHtml(metadata.description)}"><meta property="og:url" content="${escapeHtml(metadata.url)}"><meta property="og:image" content="${escapeHtml(metadata.image)}"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(metadata.schemas).replaceAll("<", "\\u003c")}</script>`;
     return new HTMLRewriter()
       .on(
-        'title,meta[name="description"],meta[property^="og:"],meta[name="robots"],link[rel="canonical"],script[type="application/ld+json"]',
+        'title,meta[name="description"],meta[property^="og:"],meta[name="robots"],link[rel="canonical"],link[rel="icon"],script[type="application/ld+json"]',
         {
           element(el) {
             el.remove();

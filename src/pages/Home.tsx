@@ -51,9 +51,16 @@ export default function Home() {
             src={view.heroImage}
             alt="An assortment of handcrafted Indian mithai on a brass platter with Assamese woven cloth"
             srcSet={
-              view.heroImage === "/images/hero.webp"
-                ? "/images/hero-small.webp 768w, /images/hero.webp 1536w"
-                : undefined
+              view.heroImage.startsWith("/api/media/")
+                ? [320, 640, 1280]
+                    .map(
+                      (w) =>
+                        `${view.heroImage.replace("-1280.webp", `-${w}.webp`)} ${w}w`,
+                    )
+                    .join(", ")
+                : view.heroImage === "/images/hero.webp"
+                  ? "/images/hero-small.webp 768w, /images/hero.webp 1536w"
+                  : undefined
             }
             sizes="(max-width: 540px) 100vw, 56vw"
             fetchPriority="high"

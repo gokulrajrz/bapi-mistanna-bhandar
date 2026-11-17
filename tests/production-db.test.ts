@@ -1,6 +1,6 @@
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, afterAll, it, expect, describe } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { seedProducts } from "../src/data/products";
 let db: PGlite;
 const guest = "a".repeat(64),
@@ -43,16 +43,9 @@ beforeAll(async () => {
   await db.exec(
     "create role anon;create role authenticated;create role service_role;",
   );
-  for (const file of [
-    "001_store.sql",
-    "002_production_commerce.sql",
-    "003_admin.sql",
-    "004_quote_recovery.sql",
-    "005_reviews.sql",
-    "006_admin_cancellation.sql",
-    "007_reconciliation_fairness.sql",
-    "008_reservation_catalogue_lock.sql",
-  ])
+  for (const file of readdirSync("supabase/migrations")
+    .filter((f) => f.endsWith(".sql"))
+    .sort())
     await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
   await db.exec(readFileSync("supabase/seed.sql", "utf8"));
   for (const p of seedProducts)
@@ -295,4 +288,86 @@ describe("production quote, reservation and payment lifecycle", () => {
     );
     expect(r.rows[0].allowed).toBe(false);
   });
+});
+
+async function editableProduct() {
+  const p = (
+    await db.query<any>("select * from public.products where id='sweet-1'")
+  ).rows[0];
+  const variants = (
+    await db.query<any>(
+      "select * from public.product_variants where product_id='sweet-1' and active order by id",
+    )
+  ).rows;
+  const inventory = (
+    await db.query<any>(
+      "select * from public.inventory where product_id='sweet-1'",
+    )
+  ).rows[0];
+  return { ...p, variants, inventory };
+}
+it("rejects an admin stock overwrite after checkout changes availability", async () => {
+  const stale = await editableProduct();
+  const o = await reserve((await quote()).id);
+  const remaining = await stock();
+  await expect(rpc("admin_write", ["products", stale, owner])).rejects.toThrow(
+    "Stock changed",
+  );
+  expect(await stock()).toBe(remaining);
+  await rpc("admin_cancel_order", [o.id, owner]);
+  const fresh = await editableProduct();
+  await rpc("admin_write", ["products", fresh, owner]);
+  await expect(rpc("admin_write", ["products", fresh, owner])).rejects.toThrow(
+    "product changed",
+  );
+});
+it("allows configured box sizes and rejects removed sizes server-side", async () => {
+  await db.exec(
+    `update public.settings set value=jsonb_set(value,'{boxSizes}','[8,16]') where key='commerce'`,
+  );
+  const box = (size: number) => ({
+    productId: "custom-box",
+    variantId: "box",
+    quantity: 1,
+    box: { size, pieces: { "sweet-1": size } },
+  });
+  expect((await quote([box(8)])).total).toBeGreaterThan(0);
+  await expect(quote([box(6)])).rejects.toThrow("fill every space");
+  await db.exec(
+    `update public.settings set value=jsonb_set(value,'{boxSizes}','[6,12,18,24]') where key='commerce'`,
+  );
+});
+it("requires a current customer revision and an administrator role for edits", async () => {
+  await db.query(
+    "insert into public.customer_profiles(user_id) values($1) on conflict do nothing",
+    [owner],
+  );
+  const doc = {
+    user_id: owner,
+    name: "Customer",
+    phone: "9876543210",
+    staff_notes: "Pickup requested",
+    revision: 1,
+  };
+  const result = await rpc<any>("admin_customer_update", [owner, doc]);
+  expect(result.revision).toBe(2);
+  await expect(rpc("admin_customer_update", [owner, doc])).rejects.toThrow(
+    "changed",
+  );
+  await expect(
+    rpc("admin_customer_update", [
+      "00000000-0000-4000-8000-000000000002",
+      { ...doc, revision: 2 },
+    ]),
+  ).rejects.toThrow("Administrator");
+});
+it("denies direct table reads and writes to browser database roles", async () => {
+  await db.exec("set role anon");
+  await expect(db.query("select * from public.orders")).rejects.toThrow();
+  await db.exec("reset role");
+  await db.exec("set role authenticated");
+  await expect(
+    db.query("update public.product_variants set stock=999"),
+  ).rejects.toThrow();
+  await db.exec("reset role");
 });

@@ -1,0 +1,225 @@
+{
+  "screens": [
+    {
+      "name": "live-1440-overview",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440
+      }
+    },
+    {
+      "name": "live-1440-orders",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-1440-customers",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-1440-reviews",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-1440-refund_jobs",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-1440-admin_users",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-1440-admin_audit",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-768-overview",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768
+      }
+    },
+    {
+      "name": "live-768-orders",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-768-customers",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-768-reviews",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-768-refund_jobs",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-768-admin_users",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-768-admin_audit",
+      "violations": [],
+      "overflow": {
+        "w": 768,
+        "scroll": 768,
+        "table": 527
+      }
+    },
+    {
+      "name": "live-320-overview",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320
+      }
+    },
+    {
+      "name": "live-320-orders",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-320-customers",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-320-reviews",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-320-refund_jobs",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-320-admin_users",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-320-admin_audit",
+      "violations": [],
+      "overflow": {
+        "w": 320,
+        "scroll": 320,
+        "table": 286
+      }
+    },
+    {
+      "name": "live-order-details",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    },
+    {
+      "name": "live-shipping-controls",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440,
+        "table": 1113
+      }
+    }
+  ],
+  "experiments": [
+    {
+      "case": "order-details-missing-data",
+      "boxContentsVisible": 0,
+      "trackingVisible": 0,
+      "body": "Order #00000000\n\npreparing · ₹1,347.00\n\nCustomer & fulfilment\nName\nAnindita Das\nPhone / WhatsApp with country code\n9876543210\nEmail\naudit@example.test\nMethod\npickup\nDate\n2026-10-01\nMessage\nWedding gift\nItems\nYour signature mithai box\n\n12 handpicked pieces · 1 × ₹1,347.00\n\nRecipient\nRecipient\nMessage\nCongratulations\nOrder history\n\nOrder is being prepared\n\n29/9/2026, 10:30:00 am"
+    },
+    {
+      "case": "pickup-status-choices",
+      "choices": [
+        "Change status…",
+        "shipped",
+        "ready for pickup"
+      ]
+    }
+  ],
+  "writes": []
+}

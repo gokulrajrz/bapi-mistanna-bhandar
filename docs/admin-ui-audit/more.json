@@ -1,0 +1,273 @@
+[
+  {
+    "case": "add-delivery_zones",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Name",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Pincode",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Charge",
+        "type": "number",
+        "value": "0"
+      },
+      {
+        "name": "Minimum order",
+        "type": "number",
+        "value": "0"
+      },
+      {
+        "name": "Available / active",
+        "type": "checkbox",
+        "value": "on"
+      },
+      {
+        "name": "Earliest delivery (days)",
+        "type": "number",
+        "value": "1"
+      },
+      {
+        "name": "Maximum transit days",
+        "type": "number",
+        "value": "2"
+      },
+      {
+        "name": "Refrigerated delivery",
+        "type": "checkbox",
+        "value": "on"
+      },
+      {
+        "name": "Same-day cutoff hour (India time)",
+        "type": "number",
+        "value": "12"
+      }
+    ]
+  },
+  {
+    "case": "add-coupons",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Code",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Percent",
+        "type": "number",
+        "value": "10"
+      },
+      {
+        "name": "Max discount",
+        "type": "number",
+        "value": "200"
+      },
+      {
+        "name": "Minimum order",
+        "type": "number",
+        "value": "0"
+      },
+      {
+        "name": "Coupon expiry (ISO timestamp; blank means no expiry)",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Available / active",
+        "type": "checkbox",
+        "value": "on"
+      }
+    ]
+  },
+  {
+    "case": "add-collections",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Id",
+        "type": "text",
+        "value": "69899397-456c-4b58-8578-93099816354b"
+      },
+      {
+        "name": "Title",
+        "type": "textarea",
+        "value": ""
+      },
+      {
+        "name": "Description",
+        "type": "textarea",
+        "value": ""
+      },
+      {
+        "name": "Hero image",
+        "type": "text",
+        "value": "/images/hero.webp"
+      },
+      {
+        "name": "Hero image",
+        "type": "file",
+        "value": ""
+      },
+      {
+        "name": "Available / active",
+        "type": "checkbox",
+        "value": "on"
+      }
+    ]
+  },
+  {
+    "case": "add-festival_campaigns",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Id",
+        "type": "text",
+        "value": "236c4cf3-0791-4e10-8fff-4882c9a990b7"
+      },
+      {
+        "name": "Collection id",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Banner",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Campaign starts (ISO timestamp)",
+        "type": "text",
+        "value": "2026-09-29T10:20:49.665Z"
+      },
+      {
+        "name": "Campaign ends (ISO timestamp)",
+        "type": "text",
+        "value": "2026-10-06T10:20:49.665Z"
+      },
+      {
+        "name": "Available / active",
+        "type": "checkbox",
+        "value": "on"
+      }
+    ]
+  },
+  {
+    "case": "add-blog_posts",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Slug",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Title",
+        "type": "textarea",
+        "value": ""
+      },
+      {
+        "name": "Body",
+        "type": "textarea",
+        "value": ""
+      },
+      {
+        "name": "Published",
+        "type": "checkbox",
+        "value": "on"
+      },
+      {
+        "name": "Tag",
+        "type": "text",
+        "value": "FROM OUR KITCHEN"
+      },
+      {
+        "name": "Image URL",
+        "type": "text",
+        "value": "/images/hero.webp"
+      },
+      {
+        "name": "Image URL",
+        "type": "file",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "case": "add-stores",
+    "violations": [],
+    "fields": [
+      {
+        "name": "Id",
+        "type": "text",
+        "value": "main"
+      },
+      {
+        "name": "Name",
+        "type": "text",
+        "value": "Bapi Mistanna Bhandar"
+      },
+      {
+        "name": "Address",
+        "type": "text",
+        "value": "Bapi Mistanna Bhandar, Near Overbridge, Mancotta Road, Dibrugarh, Assam 786001"
+      },
+      {
+        "name": "Phone / WhatsApp with country code",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Pickup enabled",
+        "type": "checkbox",
+        "value": "on"
+      },
+      {
+        "name": "Image URL",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Image URL",
+        "type": "file",
+        "value": ""
+      },
+      {
+        "name": "Hours",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "name": "Pickup Instructions",
+        "type": "textarea",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "case": "validation-placement",
+    "measure": {
+      "alertTop": 18141.671875,
+      "viewport": 900,
+      "dialogTop": 45,
+      "scrollTop": 801,
+      "focus": "<button class=\"button full\">Save changes</button>",
+      "invalidControls": 0
+    }
+  },
+  {
+    "case": "active-navigation",
+    "measure": {
+      "scrollLeft": 0,
+      "width": 290,
+      "activeLeft": 1139,
+      "activeAria": null
+    }
+  }
+]

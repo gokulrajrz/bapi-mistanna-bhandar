@@ -10,16 +10,14 @@ import { useCart } from "../lib/cart";
 import { Photo } from "../components/Photo";
 import { Quantity, Loading, ErrorState } from "../components/ui";
 export default function Builder() {
+  const { content } = useStoreContent();
+  const copy = content.storefront.pages;
   return (
     <div className="section">
       <div className="page-intro">
-        <span className="eyebrow">
-          THOUGHTFULLY PICKED. BEAUTIFULLY PACKED.
-        </span>
-        <h1>
-          A box full of <em>you.</em>
-        </h1>
-        <p>You choose the sweets. We make the occasion.</p>
+        <span className="eyebrow">{copy.builderEyebrow}</span>
+        <h1>{copy.builderTitle}</h1>
+        <p>{copy.builderDescription}</p>
       </div>
       <GiftBoxBuilder />
     </div>
@@ -36,7 +34,7 @@ export function GiftBoxBuilder() {
       p.page * p.pageSize < p.total ? p.page + 1 : undefined,
   });
   const { add } = useCart();
-  const [size, setSize] = useState(6),
+  const [selectedSize, setSize] = useState(content.commerce.boxSizes[0]),
     [pieces, setPieces] = useState<Record<string, number>>({}),
     [message, setMessage] = useState(""),
     [recipient, setRecipient] = useState(""),
@@ -44,6 +42,10 @@ export function GiftBoxBuilder() {
     [date, setDate] = useState(""),
     [wrap, setWrap] = useState(false);
   const count = Object.values(pieces).reduce((a, b) => a + b, 0);
+  const size = content.commerce.boxSizes.includes(selectedSize)
+    ? selectedSize
+    : (content.commerce.boxSizes.find((n) => n >= count) ??
+      content.commerce.boxSizes.at(-1)!);
   if (query.isPending) return <Loading />;
   if (query.isError) return <ErrorState retry={() => query.refetch()} />;
   const products = query.data.pages
@@ -62,7 +64,7 @@ export function GiftBoxBuilder() {
           <span className="step">01</span> Make a little room.
         </h2>
         <div className="box-sizes">
-          {[6, 12, 18, 24].map((n) => (
+          {content.commerce.boxSizes.map((n) => (
             <button
               key={n}
               className={size === n ? "selected" : ""}

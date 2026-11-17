@@ -1,0 +1,61 @@
+{
+  "screens": [
+    {
+      "name": "live-status-error",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440
+      }
+    },
+    {
+      "name": "manager-settings-link",
+      "violations": [],
+      "overflow": {
+        "w": 1440,
+        "scroll": 1440
+      }
+    }
+  ],
+  "experiments": [
+    {
+      "case": "pending-state",
+      "writes": 1,
+      "alerts": [],
+      "text": "Edit customers\nSupabase user ID\nName\nPhone / WhatsApp with country code\nStaff notes\n\nSaving publishes these values immediately. Inactive products and campaigns stay hidden.\n\nSaving…"
+    },
+    {
+      "case": "editable-during-save",
+      "value": "New unsaved customer"
+    },
+    {
+      "case": "escape-during-save",
+      "mounted": 1,
+      "open": false
+    },
+    {
+      "case": "failed-status",
+      "text": "Database connection\nNot configured\nResponsive image processing\nNot configured\nPayment provider\nNot configured\nWebhook verification\nNot configured\nCheckout protection\nNot configured\nInfrastructure checkout gate\nNot configured"
+    },
+    {
+      "case": "failed-heartbeat",
+      "text": "BAPI MISTANNA BHANDAR · OWNER\nOverview\nLive store\nYour store, thoughtfully managed.\n\nManage products, fulfil orders, schedule campaigns and shape your storefront from one place.\n\nDatabase connection\nConfigured\nResponsive image processing\nConfigured\nPayment provider\nConfigured\nWebhook verification\nConfigured\nCheckout protection\nConfigured\nInfrastructure checkout gate\nConfigured\nScheduled operations\n\nLast successful run: 9/29/2026, 4:58:42 PM\n\nOverdue reservations: 0 · Refunds needing review: 1 · Refunds over one hour old: 0\n\nLaunch controls are under Storefront & settings. Infrastructure secrets are configured in Cloudflare, never exposed here. Manage available stock separately from reserved stock. Use Activity log to review changes."
+    },
+    {
+      "case": "manager-protected-link",
+      "text": "BAPI MISTANNA BHANDAR · MANAGER\nStorefront & settings\nLive store\n\nLoading storefront & settings…"
+    }
+  ],
+  "writes": [
+    {
+      "path": "/api/admin/customers",
+      "body": {
+        "user_id": "00000000-0000-4000-8000-000000000001",
+        "name": "Saved customer",
+        "phone": "9876543210",
+        "staff_notes": "Regular customer",
+        "revision": 1
+      }
+    }
+  ]
+}

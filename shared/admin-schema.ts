@@ -1,3 +1,4 @@
+import { storefrontExtra, defaultBoxSizes } from "./storefront-extra";
 import { homeContent } from "./home-content";
 import { z } from "zod";
 const text = z.string().trim().max(5000);
@@ -20,6 +21,7 @@ const amount = z
   );
 export const productAdminSchema = z.object({
   id,
+  revision: z.number().int().nonnegative().default(0),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   active: z.boolean(),
   sort_order: z.number().int().min(0).max(10000),
@@ -32,6 +34,9 @@ export const productAdminSchema = z.object({
     ingredients: stringList,
     allergens: stringList,
     tags: stringList,
+    storageInstructions: text.default(""),
+    freshnessDetails: text.default(""),
+    crossContactWarning: text.default(""),
     shelfLife: z.string().min(1).max(100),
     shelfLifeDays: z.number().int().min(1).max(365),
     requiresRefrigeration: z.boolean(),
@@ -42,6 +47,7 @@ export const productAdminSchema = z.object({
     .array(
       z.object({
         id,
+        revision: z.number().int().nonnegative().default(0),
         label: z.string().min(1).max(60),
         price: amount,
         stock: z.number().int().min(0).max(100000),
@@ -55,6 +61,7 @@ export const productAdminSchema = z.object({
       "Variant IDs must be unique.",
     ),
   inventory: z.object({
+    revision: z.number().int().nonnegative().default(0),
     piece_price: amount,
     pieces: z.number().int().min(0).max(100000),
   }),
@@ -85,6 +92,12 @@ export const settingsSchemas = {
     launchApproved: z.boolean(),
   }),
   commerce: z.object({
+    boxSizes: z
+      .array(z.number().int().min(1).max(48))
+      .min(1)
+      .max(8)
+      .refine((v) => new Set(v).size === v.length, "Box sizes must be unique.")
+      .default(defaultBoxSizes),
     boxFee: amount,
     wrapFee: amount,
     freeShipping: amount,
@@ -126,6 +139,78 @@ export const settingsSchemas = {
           closing: text,
         })
         .default(homeContent),
+      experience: z
+        .object({
+          catalogueEyebrow: text,
+          catalogueTitle: text,
+          catalogueDescription: text,
+          prices: z.array(amount).max(12),
+          dietaryOptions: z
+            .array(z.object({ label: text, value: z.string().min(1).max(40) }))
+            .max(20),
+          occasionOptions: z
+            .array(z.object({ label: text, value: z.string().min(1).max(40) }))
+            .max(20),
+          badges: z
+            .array(
+              z.object({
+                category: text,
+                productId: z.string().max(80),
+                label: text,
+              }),
+            )
+            .max(30),
+          footerColumns: z
+            .array(
+              z.object({
+                title: text,
+                links: z
+                  .array(
+                    z.object({
+                      label: text,
+                      to: z.string().regex(/^\/(?!\/)/),
+                    }),
+                  )
+                  .max(12),
+              }),
+            )
+            .max(5),
+          footerSignature: text,
+          cartRecommendations: z.boolean(),
+          cartRecommendationsTitle: text,
+          storyMotion: z.boolean(),
+        })
+        .default(storefrontExtra.experience),
+      logo: image.default(""),
+      favicon: image.default("/favicon.svg"),
+      pages: z
+        .object({
+          storyEyebrow: text,
+          storySubtitle: text,
+          storySectionTitle: text,
+          makingSteps: z.array(text).max(12),
+          giftsEyebrow: text,
+          giftsFeatureEyebrow: text,
+          giftsFeatureTitle: text,
+          giftsFeatureDescription: text,
+          giftingCards: z
+            .array(
+              z.object({
+                title: text,
+                description: text,
+                to: z.string().regex(/^\/(?!\/)/),
+                image,
+              }),
+            )
+            .max(12),
+          journalEyebrow: text,
+          journalTitle: text,
+          journalDescription: text,
+          builderEyebrow: text,
+          builderTitle: text,
+          builderDescription: text,
+        })
+        .default(storefrontExtra.pages),
       announcement: text,
       tagline: text,
       heroEyebrow: text,
@@ -178,6 +263,13 @@ export const settingsSchemas = {
   }),
 };
 export const resourceSchemas = {
+  customers: z.object({
+    user_id: z.uuid(),
+    name: z.string().trim().min(2).max(100),
+    phone: z.string().regex(/^$|^[6-9]\d{9}$/),
+    staff_notes: z.string().max(2000),
+    revision: z.number().int().positive(),
+  }),
   products: productAdminSchema,
   delivery_zones: z
     .object({
@@ -230,10 +322,11 @@ export const resourceSchemas = {
     data: z.object({ tag: z.string().max(100), image }),
   }),
   stores: z.object({
+    revision: z.number().int().nonnegative().default(0),
     id: z.literal("main"),
     name: z.string().min(1).max(100),
     address: text,
-    phone: z.string().max(20),
+    phone: z.string().regex(/^$|^\+?[1-9]\d{9,14}$/),
     hours: z.record(z.string(), z.string()),
     pickup_enabled: z.boolean(),
     data: z.object({ image, hours: text, pickupInstructions: text }),

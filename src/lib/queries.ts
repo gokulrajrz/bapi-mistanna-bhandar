@@ -1,11 +1,12 @@
 import {
   keepPreviousData,
   queryOptions,
+  infiniteQueryOptions,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { catalogue, orders } from "./api";
-import type { Filters } from "./types";
+import type { Filters, ReviewCursor } from "./types";
 export const keys = {
   products: ["products"] as const,
   list: (filters: Filters) => ["products", "list", filters] as const,
@@ -34,9 +35,12 @@ export const productQueries = {
       enabled: !!slug,
     }),
   reviews: (id: string) =>
-    queryOptions({
+    infiniteQueryOptions({
       queryKey: keys.reviews(id),
-      queryFn: ({ signal }) => catalogue.reviews(id, signal),
+      initialPageParam: null as ReviewCursor | null,
+      queryFn: ({ pageParam, signal }) =>
+        catalogue.reviews(id, pageParam, signal),
+      getNextPageParam: (page) => page.nextCursor ?? undefined,
       enabled: !!id,
     }),
 };

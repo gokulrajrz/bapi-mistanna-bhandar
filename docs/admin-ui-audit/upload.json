@@ -1,0 +1,54 @@
+{
+  "screens": [],
+  "experiments": [
+    {
+      "case": "upload-save-enabled",
+      "saveEnabled": true
+    },
+    {
+      "case": "saved-before-upload",
+      "dialog": 0,
+      "writes": [
+        {
+          "path": "/api/admin/stores",
+          "body": {
+            "id": "main",
+            "name": "Bapi",
+            "address": "Mancotta Road",
+            "phone": "",
+            "hours": {},
+            "pickup_enabled": false,
+            "data": {
+              "image": "",
+              "hours": "",
+              "pickupInstructions": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case": "upload-late-result",
+      "dialog": 1,
+      "image": "/api/media/catalogue/audit-1280.webp"
+    }
+  ],
+  "writes": [
+    {
+      "path": "/api/admin/stores",
+      "body": {
+        "id": "main",
+        "name": "Bapi",
+        "address": "Mancotta Road",
+        "phone": "",
+        "hours": {},
+        "pickup_enabled": false,
+        "data": {
+          "image": "",
+          "hours": "",
+          "pickupInstructions": ""
+        }
+      }
+    }
+  ]
+}

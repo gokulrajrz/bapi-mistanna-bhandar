@@ -9,6 +9,7 @@ export default function Shop() {
   const [params, setParams] = useSearchParams();
   const { content } = useStoreContent();
   const categories = content.categories;
+  const copy = content.storefront.experience;
   const collection = content.collections.find(
     (c) => c.id === params.get("collection"),
   );
@@ -39,18 +40,9 @@ export default function Shop() {
         <span>/</span>Shop sweets
       </div>
       <div className="page-intro">
-        <span className="eyebrow">A LITTLE SOMETHING FOR EVERYONE</span>
-        <h1>
-          {collection
-            ? collection.title
-            : filters.occasion === "bihu"
-              ? "A sweet beginning."
-              : "Find your kind of sweet."}
-        </h1>
-        <p>
-          {collection?.description ||
-            "Old favourites. New discoveries. All made for sharing."}
-        </p>
+        <span className="eyebrow">{copy.catalogueEyebrow}</span>
+        <h1>{collection ? collection.title : copy.catalogueTitle}</h1>
+        <p>{collection?.description || copy.catalogueDescription}</p>
         {collection?.hero && (
           <img
             className="collection-hero"
@@ -87,9 +79,11 @@ export default function Shop() {
             onChange={(e) => change("maxPrice", e.target.value)}
           >
             <option value="">All prices</option>
-            <option value="300">Under ₹300</option>
-            <option value="500">Under ₹500</option>
-            <option value="1000">Under ₹1,000</option>
+            {copy.prices.map((value) => (
+              <option key={value} value={value}>
+                Under ₹{value.toLocaleString("en-IN")}
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -99,7 +93,11 @@ export default function Shop() {
             onChange={(e) => change("dietary", e.target.value)}
           >
             <option value="">All dietary</option>
-            <option value="vegan">Vegan ingredients</option>
+            {copy.dietaryOptions.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -109,11 +107,11 @@ export default function Shop() {
             onChange={(e) => change("occasion", e.target.value)}
           >
             <option value="">Every occasion</option>
-            <option value="bihu">Bihu</option>
-            <option value="festival">Festivals</option>
-            <option value="gifting">Gifting</option>
-            <option value="wedding">Weddings</option>
-            <option value="corporate">Corporate</option>
+            {copy.occasionOptions.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="check-label">
@@ -165,6 +163,7 @@ export default function Shop() {
           className="product-grid catalog-grid"
           style={{ opacity: query.isPlaceholderData ? 0.6 : 1 }}
         >
+          <h2 className="sr-only">Available sweets</h2>
           {query.data.items.map((p) => (
             <ProductCard product={p} key={p.id} />
           ))}

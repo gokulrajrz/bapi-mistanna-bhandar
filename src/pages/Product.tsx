@@ -1,9 +1,10 @@
+import { isDemo } from "../lib/api";
 import { ReviewForm } from "../components/ReviewForm";
 import { ProductGallery } from "../components/ProductGallery";
 import { useStoreContent } from "../lib/content";
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Gift as GiftIcon,
@@ -63,7 +64,7 @@ function ProductDetails({ product: p }: { product: ProductType }) {
   });
   const cart = useCart(),
     navigate = useNavigate();
-  const reviews = useQuery(productQueries.reviews(p.id));
+  const reviews = useInfiniteQuery(productQueries.reviews(p.id));
   const related = useQuery(productQueries.list({ category: p.category }));
   const v = p.variants[variant];
   function add(buy = false) {
@@ -223,16 +224,22 @@ function ProductDetails({ product: p }: { product: ProductType }) {
             [
               "Allergen information",
               p.allergens.length
-                ? `Contains ${p.allergens.join(", ")}. Prepared in a kitchen that handles milk, nuts, gluten and sesame.`
-                : "Prepared in a kitchen that handles milk, nuts, gluten and sesame.",
+                ? `Contains ${p.allergens.join(", ")}. ${p.crossContactWarning || "Contact the store about cross-contact before ordering."}`
+                : p.crossContactWarning ||
+                  "Contact the store for allergen information before ordering.",
             ],
             [
               "Shelf life & storage",
-              `${p.shelfLife} from preparation. Store sealed in a cool, dry place; refrigerate milk sweets. Product specifications are demo data pending shop confirmation.`,
+              `${p.shelfLife} from preparation. ${p.storageInstructions || "Contact the store for storage instructions."} ${isDemo ? "Illustrative product specifications; confirm with the shop." : ""}`,
+            ],
+            [
+              "Freshness",
+              p.freshnessDetails ||
+                "Contact the store for preparation details.",
             ],
             [
               "Delivery & pickup",
-              "Delivery eligibility depends on your pincode and the freshness needs of your sweets. Pickup is available at checkout. Final fulfilment details must be confirmed by the store.",
+              `Check your pincode and available date at checkout. ${content.commerce.pickupEnabled ? content.settings.pickupInstructions || "Store pickup is available." : "Store pickup is currently unavailable."}`,
             ],
           ].map(([title, text]) => (
             <details key={title}>
@@ -243,28 +250,51 @@ function ProductDetails({ product: p }: { product: ProductType }) {
         </div>
       </div>
       <section className="reviews">
+        {!!p.ratingCount && (
+          <p aria-label="Average customer rating">
+            ★ {p.ratingAverage} out of 5 · {p.ratingCount} published reviews
+          </p>
+        )}
         {content.operations.reviewSubmissions && (
           <ReviewForm productId={p.id} />
         )}
         <h2>Sweet words.</h2>
         {reviews.isPending ? (
           <p>Loading reviews…</p>
-        ) : reviews.isError ? (
+        ) : reviews.isError && !reviews.data ? (
           <ErrorState retry={() => reviews.refetch()} />
-        ) : reviews.data.length ? (
-          reviews.data.map((r) => (
-            <article key={r.id}>
-              <strong>{r.name}</strong>
-              <span>
-                {" "}
-                · {r.rating}/5 {r.verified ? "· Verified purchase" : ""}
-              </span>
-              <p>{r.body}</p>
-              <small>{new Date(r.created_at).toLocaleDateString()}</small>
-            </article>
-          ))
+        ) : reviews.data?.pages.some((page) => page.items.length) ? (
+          reviews.data.pages
+            .flatMap((page) => page.items)
+            .map((r) => (
+              <article key={r.id}>
+                <strong>{r.name}</strong>
+                <span>
+                  {" "}
+                  · {r.rating}/5 {r.verified ? "· Verified purchase" : ""}
+                </span>
+                <p>{r.body}</p>
+                <small>{new Date(r.created_at).toLocaleDateString()}</small>
+              </article>
+            ))
         ) : (
           <p>No reviews yet. Your next favourite could be the first.</p>
+        )}
+        {reviews.isFetchNextPageError && (
+          <p role="alert">
+            More reviews could not be loaded. Please try again.
+          </p>
+        )}
+        {reviews.hasNextPage && (
+          <button
+            className="button outline"
+            disabled={reviews.isFetchingNextPage}
+            onClick={() => reviews.fetchNextPage()}
+          >
+            {reviews.isFetchingNextPage
+              ? "Loading reviews…"
+              : "Load more reviews"}
+          </button>
         )}
       </section>
       <section>

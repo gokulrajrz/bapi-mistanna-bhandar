@@ -9,7 +9,7 @@ import {
   response,
   rpcError,
 } from "../../../server/http";
-const line = orderLineSchema.extend({
+const line = orderLineSchema.safeExtend({
   key: z.string().max(100),
   name: z.string().max(150),
   image: z.string().max(2048),

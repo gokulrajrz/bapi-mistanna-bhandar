@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-30",
+  "scope": "Isolated Chromium fixtures and embedded PostgreSQL; no live writes",
+  "browser": {
+    "dirtyBackNavigation": {
+      "reproduced": true,
+      "dialogsAfterBack": 0
+    },
+    "variantReorder": {
+      "reproduced": true,
+      "submitted": [
+        {
+          "label": "500 g",
+          "sort_order": 1
+        },
+        {
+          "label": "250 g",
+          "sort_order": 0
+        }
+      ]
+    },
+    "discardDialogCloseAccidentalSave": {
+      "reproduced": false,
+      "writes": 0
+    }
+  },
+  "database": {
+    "staleCommerceSave": {
+      "pickupBefore": true,
+      "pickupAfter": false,
+      "intendedChange": "wrapFee only"
+    }
+  },
+  "sourceOnly": [
+    "Customer history has no unique tie-breaker after created_at",
+    "Empty history page says No orders yet despite positive total"
+  ],
+  "scripts": [
+    "/tmp/bapi-admin-followup.spec.ts",
+    "/tmp/bapi-admin-stale-settings.mts"
+  ]
+}

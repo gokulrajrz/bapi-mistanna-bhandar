@@ -1,3 +1,4 @@
+import { ratingSummaries } from "../../../server/ratings";
 import { db } from "../../../server/supabase";
 import { endpoint, response, rpcError } from "../../../server/http";
 export const onRequestGet = endpoint(async (ctx) => {
@@ -10,6 +11,7 @@ export const onRequestGet = endpoint(async (ctx) => {
     .eq("active", true)
     .maybeSingle();
   rpcError(error);
+  const ratings = data ? await ratingSummaries(ctx.env, [data.id]) : {};
   const inventory = Array.isArray(data?.inventory)
     ? data.inventory[0]
     : data?.inventory;
@@ -17,6 +19,7 @@ export const onRequestGet = endpoint(async (ctx) => {
     data
       ? {
           ...data.data,
+          ...ratings[data.id],
           variants: data.product_variants
             .filter((v) => v.active)
             .sort(

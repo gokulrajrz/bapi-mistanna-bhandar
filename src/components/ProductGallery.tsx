@@ -49,6 +49,7 @@ export function ProductGallery({
             >
               <Photo
                 src={src}
+                priority={i === 0}
                 srcSet={srcSets?.[i]}
                 alt={`${name}, view ${i + 1}`}
               />

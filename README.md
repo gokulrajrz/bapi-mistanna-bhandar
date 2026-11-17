@@ -23,17 +23,21 @@ Visit `/` for the storefront and `/admin` for the admin preview. Demo checkout t
 
 ## Admin panel
 
-Owners manage branding, theme colours, homepage copy and imagery, navigation, section visibility, story/gifting content, metadata defaults, contact details, policies, fees, pickup, reservation windows, cancellation rules, maintenance and checkout switches, and staff roles. Managers manage products, variants, inventory, private image uploads, delivery zones, coupons, collections, scheduled festivals, journal entries, store details, review moderation, orders and refund reconciliation.
+Owners manage branding, theme colours, homepage copy and imagery, navigation, section visibility, story/gifting content, metadata defaults, contact details, policies, fees, pickup, reservation windows, cancellation rules, maintenance and checkout switches, configurable gift-box sizes, logo/favicon, footer navigation, catalogue copy/filter options, product badges, recommendation visibility, story motion, and staff roles. Managers manage products, variants, inventory, private image uploads, delivery zones, coupons, collections, scheduled festivals, journal entries, store details, review moderation, orders, customer profiles/notes/history and refund reconciliation.
 
-Order details include customer/fulfilment information, gift instructions and status history. Staff advance allowed fulfilment states and cancel eligible orders; captured payments queue a full refund. Writes validate on the BFF and critical operations are audited in the database. Last-owner removal is prevented. Inventory quantities represent available stock, excluding existing reservations. Deactivate records to remove them from sale without breaking order history.
+Order details include customer/fulfilment information, per-box packing quantities, gift instructions, shipment tracking and status history. Staff advance allowed fulfilment states and cancel eligible orders; captured payments queue a full refund. Writes validate on the BFF and critical operations are audited in the database. Last-owner removal is prevented. Inventory quantities represent available stock, excluding existing reservations. Deactivate records to remove them from sale without breaking order history.
+
+The admin editor uses section navigation, typed fields, image previews/reordering, India-time scheduling, and BFF-backed relationship choices. Existing identifiers are protected; unsaved dismissal requires confirmation, and pending uploads/saves lock editing. Lists support server-side search, filters and pagination, with mobile record cards and linked customer/order history. Owners can revoke staff access with last-owner protection. Store contact and pickup settings synchronize atomically with public/commerce settings.
+
+Apply migrations **016_admin_workflows.sql** and **017_admin_conflict_protection.sql** before deploying these admin changes. Settings and Store writes now require the revision returned by the BFF; stale saves return a conflict and retain the open draft. The [admin UI audit](docs/ADMIN-UI-AUDIT.md) records the original findings and their remediation. These changes do not apply migrations or deploy the store automatically.
 
 Infrastructure credentials, cron scheduling, domain and deployment settings remain in Cloudflare. The admin panel reports configuration presence without disclosing secrets. Business configuration does not require rebuilding the app; public content may take up to 30 seconds to refresh.
 
 ## Database and authentication setup
 
-1. Apply **all** files in `supabase/migrations` in numeric order (001–008) to a new Supabase project. Back up existing data before applying migrations to an existing store.
+1. Apply **all** files in `supabase/migrations` in numeric order (001–017) to a new Supabase project. Back up existing data before applying migrations to an existing store.
 2. For development only, run `npm run seed:generate` and apply `supabase/seed.sql`. Prices, stock, ingredients, shelf life and images are illustrative. Do not reapply the seed over live inventory.
-3. Create a **private** Storage bucket named `store-media`. BFF uploads allow JPEG/PNG/WebP/AVIF up to 5 MB and serve them through `/api/media/*`.
+3. Create a **private** Storage bucket named `store-media`. BFF uploads allow JPEG/PNG/WebP/AVIF up to 5 MB. The internal Cloudflare Images Worker decodes and re-encodes static WebP derivatives at 320/640/1280 px; the BFF stores them privately and serves them through `/api/media/*`.
 4. Enable email OTP in Supabase Auth; configure the email template to display `{{ .Token }}` and configure production SMTP. Sign-in and verification happen through BFF routes, not a browser Supabase client. See [Supabase email OTP configuration](https://supabase.com/docs/guides/auth/auth-email-passwordless).
 5. Sign in once, then bootstrap the first owner using that user's UUID in trusted Supabase SQL administration:
 
@@ -66,7 +70,9 @@ Configure these Pages runtime variables/secrets:
 
 For local BFF development, copy `.dev.vars.example` to `.dev.vars`, fill in local secrets, then run `npm run dev:cloudflare`. Vite alone runs the frontend preview.
 
-Deploy the app with `npm run deploy`. Separately deploy the scheduled Worker with `npm run deploy:maintenance`; configure its `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` secrets using the `wrangler.maintenance.toml` configuration. Its five-minute cron is required for expiry/refund reconciliation. No public maintenance endpoint exists. Both application runtimes deploy to Cloudflare.
+Enable Cloudflare Images for the account and first deploy the internal image Worker with `npm run deploy:images`. Pages binds it as `IMAGE_PROCESSOR` through `wrangler.toml`; it has no public workers.dev endpoint. Uploads fail closed when this binding is absent. Then deploy the app with `npm run deploy`. Separately deploy the scheduled Worker with `npm run deploy:maintenance`; configure its `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` secrets using the `wrangler.maintenance.toml` configuration. Its five-minute cron is required for expiry/refund reconciliation. No public maintenance endpoint exists. Both application runtimes deploy to Cloudflare.
+
+The cart can calculate delivery/pickup estimates, coupons and totals through `/api/estimate`. It uses the same database pricing calculation as checkout, with no stock reservation or saved quote. Product ratings aggregate published reviews only; review browsing uses cursor pagination in batches of 20. Apply migration 015 before deploying the paginated review API. Quick-add selects an in-stock variant. Cart delivery/pickup preferences carry into checkout and persist within the browser tab; prices are always recalculated by the BFF.
 
 ## Checkout and payment lifecycle
 
@@ -83,6 +89,9 @@ npm test                 # Embedded Postgres transactions and security checks
 npm run check:bff        # Functions/Worker TypeScript
 npm run build            # Frontend TypeScript and production assets
 npm run build:bff        # Cloudflare Functions bundle
+npm run test:e2e:live    # Non-demo UI with isolated BFF/provider fixtures
+npm run audit:performance # Running production preview at :4173 required
+npm run db:bundle       # Fresh-project SQL bundle in /tmp/bapi-database-setup
 npm run test:e2e         # Auto-starts Vite; Chromium commerce/admin/axe checks
 npm run test:cloudflare  # Running Wrangler at :8791 required, or set SMOKE_ORIGIN
 ```
@@ -90,3 +99,5 @@ npm run test:cloudflare  # Running Wrangler at :8791 required, or set SMOKE_ORIG
 CI runs types, database/security tests, builds, browser flows and automated WCAG checks. These checks do not certify accessibility or replace real gateway acceptance tests. See [operations runbook](docs/operations.md) for launch and incident handling.
 
 Live launch requires merchant credentials, owner bootstrap, approved catalogue/photos/policies, confirmed opening hours/phone and actual delivery rules. Approve business details and enable checkout in admin only after test-mode acceptance, then enable the infrastructure gate. Keep demo and live mode consistent in build and runtime environments. Auth email delivery uses Supabase SMTP; transactional order emails/SMS, tax invoices, courier integrations, and accounting integrations are not implemented.
+
+Current local verification and measured performance are recorded in [HARDENING.md](docs/HARDENING.md). The configured Supabase project still needs schema setup; generating a SQL bundle does not apply it.

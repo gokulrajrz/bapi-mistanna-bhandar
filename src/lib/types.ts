@@ -15,6 +15,11 @@ export type Product = {
   ingredients: string[];
   allergens: string[];
   tags: string[];
+  storageInstructions?: string;
+  freshnessDetails?: string;
+  crossContactWarning?: string;
+  ratingAverage?: number;
+  ratingCount?: number;
   shelfLife: string;
   shelfLifeDays: number;
   requiresRefrigeration: boolean;
@@ -121,6 +126,7 @@ export type StoreContent = {
     launchApproved: boolean;
   };
   commerce: {
+    boxSizes: number[];
     boxFee: number;
     wrapFee: number;
     freeShipping: number;
@@ -179,4 +185,17 @@ export type OrderDetails = {
     description: string;
     created_at: string;
   }[];
+};
+
+export type ReviewCursor = { createdAt: string; id: string };
+export type ReviewPage = {
+  items: {
+    id: string;
+    name: string;
+    rating: number;
+    body: string;
+    created_at: string;
+    verified: boolean;
+  }[];
+  nextCursor: ReviewCursor | null;
 };

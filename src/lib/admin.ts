@@ -1,13 +1,14 @@
 import { seedProducts } from "../data/products";
 import { demoContent } from "./content";
 import { isDemo } from "./api";
-import { api } from "./request";
+import { api, ApiError } from "./request";
 export type Json =
   string | number | boolean | null | Json[] | { [key: string]: Json };
 export type AdminRecord = Record<string, Json>;
 export const adminResources = [
   ["overview", "Overview"],
   ["orders", "Orders"],
+  ["customers", "Customers"],
   ["products", "Products & inventory"],
   ["delivery_zones", "Delivery areas"],
   ["coupons", "Coupons"],
@@ -39,6 +40,9 @@ export function freshRecord(resource: string): AdminRecord {
           ingredients: [],
           allergens: [],
           tags: [],
+          storageInstructions: "",
+          freshnessDetails: "",
+          crossContactWarning: "",
           shelfLife: "5 days",
           shelfLifeDays: 5,
           requiresRefrigeration: false,
@@ -130,6 +134,9 @@ function initial(resource: string): AdminRecord[] {
           ingredients: p.ingredients,
           allergens: p.allergens,
           tags: p.tags,
+          storageInstructions: "",
+          freshnessDetails: "",
+          crossContactWarning: "",
           shelfLife: p.shelfLife,
           shelfLifeDays: p.shelfLifeDays,
           requiresRefrigeration: p.requiresRefrigeration,
@@ -173,15 +180,75 @@ export const adminApi = {
   async list(
     resource: string,
     page = 1,
+    filters: Record<string, string> = {},
+    signal?: AbortSignal,
   ): Promise<{
     items: AdminRecord[];
     total: number;
     page: number;
     pageSize: number;
   }> {
-    if (!isDemo) return api(`/api/admin/${resource}?page=${page}`);
-    const items = memory.get(resource) || initial(resource);
-    return { items, total: items.length, page: 1, pageSize: 50 };
+    if (!isDemo)
+      return api(
+        `/api/admin/${resource}?${new URLSearchParams({ ...filters, page: String(page) })}`,
+        { signal },
+      );
+    const items = (memory.get(resource) || initial(resource)).filter((r) => {
+      if (
+        filters.q &&
+        !JSON.stringify(r).toLowerCase().includes(filters.q.toLowerCase())
+      )
+        return false;
+      if (
+        filters.status &&
+        String(r.status ?? r.role ?? r.active ?? r.published) !== filters.status
+      )
+        return false;
+      if (
+        filters.method &&
+        (r.contact as AdminRecord)?.method !== filters.method
+      )
+        return false;
+      if (
+        filters.from &&
+        Date.parse(String(r.created_at)) <
+          Date.parse(filters.from + "T00:00:00+05:30")
+      )
+        return false;
+      if (
+        filters.to &&
+        Date.parse(String(r.created_at)) >=
+          Date.parse(filters.to + "T00:00:00+05:30") + 86400000
+      )
+        return false;
+      return true;
+    });
+    if (filters.sort)
+      items.sort((a, b) =>
+        filters.sort === "name"
+          ? String(
+              (a.data as AdminRecord)?.name || a.name || a.title || a.id,
+            ).localeCompare(
+              String(
+                (b.data as AdminRecord)?.name || b.name || b.title || b.id,
+              ),
+            )
+          : String(a.created_at || a.updated_at || a.id).localeCompare(
+              String(b.created_at || b.updated_at || b.id),
+            ) * (filters.sort === "oldest" ? 1 : -1),
+      );
+    return {
+      items: items
+        .slice((page - 1) * 50, page * 50)
+        .map((r) =>
+          ["stores", "settings"].includes(resource)
+            ? { ...r, revision: r.revision ?? 1 }
+            : r,
+        ),
+      total: items.length,
+      page,
+      pageSize: 50,
+    };
   },
   async save(resource: string, record: AdminRecord) {
     if (!isDemo)
@@ -200,11 +267,74 @@ export const adminApi = {
             : resource === "admin_users"
               ? "user_id"
               : "id";
+    if (resource === "delivery_zones" && !record.id)
+      record = {
+        ...record,
+        id: Math.max(0, ...old.map((r) => Number(r.id) || 0)) + 1,
+      };
     const index = old.findIndex((r) => r[key] === record[key]);
+    if (["settings", "stores"].includes(resource)) {
+      const expected = index >= 0 ? Number(old[index].revision ?? 1) : 0;
+      if (Number(record.revision ?? 0) !== expected)
+        throw new ApiError(
+          "These settings changed while you were editing. Your changes were not saved. Close and reopen to review the latest values.",
+          409,
+        );
+      record = { ...record, revision: expected + 1 };
+    }
     const next = [...old];
     if (index >= 0) next[index] = record;
     else next.push(record);
     memory.set(resource, next);
+    if (resource === "stores") {
+      const settings = structuredClone(
+        memory.get("settings") || initial("settings"),
+      );
+      for (const r of settings) {
+        if (["public", "commerce"].includes(String(r.key)))
+          r.revision = Number(r.revision ?? 1) + 1;
+        if (r.key === "public")
+          r.value = {
+            ...(r.value as AdminRecord),
+            name: record.name,
+            address: record.address,
+            phone: record.phone,
+            hours: (record.data as AdminRecord).hours,
+            pickupInstructions: (record.data as AdminRecord).pickupInstructions,
+          };
+        if (r.key === "commerce")
+          r.value = {
+            ...(r.value as AdminRecord),
+            pickupEnabled: record.pickup_enabled,
+          };
+      }
+      memory.set("settings", settings);
+    } else if (
+      resource === "settings" &&
+      ["public", "commerce"].includes(String(record.key))
+    ) {
+      const stores = structuredClone(memory.get("stores") || initial("stores"));
+      const value = record.value as AdminRecord;
+      for (const store of stores) {
+        store.revision = Number(store.revision ?? 1) + 1;
+        if (record.key === "commerce")
+          store.pickup_enabled = value.pickupEnabled;
+        else {
+          Object.assign(store, {
+            name: value.name,
+            address: value.address,
+            phone: value.phone,
+          });
+          store.data = {
+            ...(store.data as AdminRecord),
+            hours: value.hours,
+            pickupInstructions: value.pickupInstructions,
+          };
+        }
+      }
+      memory.set("stores", stores);
+    }
+
     return record;
   },
 };

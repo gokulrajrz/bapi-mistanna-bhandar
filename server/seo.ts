@@ -39,7 +39,13 @@ export async function pageMetadata(env: Env, pathname: string) {
       url: origin,
     },
   ];
-  let status = 200;
+  let status =
+    /^\/(?:shop|story|gifts|build-a-box|journal(?:\/[a-z0-9-]+)?|products\/[a-z0-9-]+|store|policies)?$/.test(
+      pathname,
+    )
+      ? 200
+      : 404;
+  let preload = pathname === "/" ? style.heroImage : "";
   if (pathname.startsWith("/products/")) {
     const slug = pathname.split("/")[2];
     const { data, error } = await c
@@ -58,6 +64,9 @@ export async function pageMetadata(env: Env, pathname: string) {
           (a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id),
         );
       title = p.name;
+      preload = /sweet-\d\.webp$/.test(p.image || "")
+        ? "/images/sweets.webp"
+        : (p.image || "").split("#")[0];
       description = p.description;
       image = /\/images\/sweets?[-.]/.test(p.image || "")
         ? style.socialImage
@@ -137,5 +146,7 @@ export async function pageMetadata(env: Env, pathname: string) {
     schemas,
     status,
     index: brand.launchApproved && status === 200,
+    preload,
+    favicon: style.favicon || "/favicon.svg",
   };
 }

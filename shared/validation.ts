@@ -58,15 +58,10 @@ export const orderLineSchema = z
     gift: giftSchema.optional(),
     box: z
       .object({
-        size: z.union([
-          z.literal(6),
-          z.literal(12),
-          z.literal(18),
-          z.literal(24),
-        ]),
+        size: z.number().int().min(1).max(48),
         pieces: z.record(
           z.string().min(1).max(80),
-          z.number().int().min(1).max(24),
+          z.number().int().min(1).max(48),
         ),
       })
       .optional(),
@@ -103,4 +98,23 @@ export const addressSchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/),
   address: z.string().trim().min(10).max(500),
   pincode: z.string().regex(/^\d{6}$/),
+});
+
+export const estimateRequestSchema = z.object({
+  items: z.array(orderLineSchema).min(1).max(50),
+  contact: z
+    .object({
+      method: z.enum(["delivery", "pickup"]),
+      pincode: z.string().max(6),
+      date: futureDate,
+      coupon: z
+        .string()
+        .trim()
+        .max(40)
+        .transform((v) => v.toUpperCase()),
+    })
+    .refine(
+      (v) => v.method === "pickup" || /^\d{6}$/.test(v.pincode),
+      "Enter a valid 6-digit delivery pincode.",
+    ),
 });

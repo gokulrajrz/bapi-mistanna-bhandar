@@ -2,7 +2,7 @@ import { SignIn } from "./SignIn";
 import { useSession } from "../lib/auth";
 import { useStoreContent } from "../lib/content";
 import { Photo } from "./Photo";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
@@ -21,6 +21,9 @@ import { isDemo } from "../lib/api";
 import { productQueries } from "../lib/queries";
 import { totals } from "../lib/commerce";
 import { Dialog, Quantity, ErrorState } from "./ui";
+const CartEstimate = lazy(() =>
+  import("./CartEstimate").then((m) => ({ default: m.CartEstimate })),
+);
 const links = [
   ["Shop", "/shop"],
   ["Gifting", "/gifts"],
@@ -58,8 +61,16 @@ export function Header() {
         </span>
       </div>
       <header className="header">
-        <Link className="brand" to="/" aria-label={`${settings.name} home`}>
-          <Flower2 strokeWidth={1.2} />
+        <Link
+          className="brand"
+          to="/"
+          aria-label={`${settings.name} ${storefront.tagline} home`}
+        >
+          {storefront.logo ? (
+            <img className="brand-logo" src={storefront.logo} alt="" />
+          ) : (
+            <Flower2 strokeWidth={1.2} />
+          )}
           <span>
             {settings.name}
             <small>{storefront.tagline}</small>
@@ -92,7 +103,7 @@ export function Header() {
           </button>
           <button
             className="icon-button bag-button"
-            aria-label="Open shopping bag"
+            aria-label={`Open shopping bag, ${items.reduce((n, i) => n + i.quantity, 0)} items`}
             onClick={() => setOpen(true)}
           >
             <ShoppingBag size={20} />
@@ -278,23 +289,15 @@ export function CartDrawer() {
               <span>Subtotal</span>
               <span>{money(total.subtotal)}</span>
             </div>
-            <div>
-              <span>Estimated shipping</span>
-              <span>
-                {isDemo
-                  ? total.shipping
-                    ? money(total.shipping)
-                    : "Complimentary"
-                  : "Calculated at checkout"}
-              </span>
-            </div>
-            <p>Delivery date and discounts calculated at checkout.</p>
+            <Suspense fallback={<p>Loading delivery calculator…</p>}>
+              <CartEstimate />
+            </Suspense>
             <Link
               className="button full"
               to="/checkout"
               onClick={() => setOpen(false)}
             >
-              Checkout · {money(total.subtotal)}
+              Continue to checkout
               <ArrowRight size={18} />
             </Link>
             <button className="text-button" onClick={() => setOpen(false)}>
@@ -309,42 +312,33 @@ export function CartDrawer() {
 export function Footer() {
   const { content } = useStoreContent();
   return (
-    <footer>
+    <footer className="site-footer">
       <div className="footer-top">
         <div>
-          <Flower2 size={34} strokeWidth={1} />
+          {content.storefront.logo ? (
+            <img className="brand-logo" src={content.storefront.logo} alt="" />
+          ) : (
+            <Flower2 size={34} strokeWidth={1} />
+          )}
           <h2>{content.storefront.footerTitle}</h2>
           <p>{content.storefront.footerDescription}</p>
         </div>
-        <div>
-          <span className="eyebrow">FIND YOUR SWEET</span>
-          <Link to="/shop">All sweets</Link>
-          <Link to="/shop?category=Assamese+specialties">From Assam</Link>
-          <Link to="/gifts">Thoughtful gifting</Link>
-          <Link to="/build-a-box">Build your box</Link>
-        </div>
-        <div>
-          <span className="eyebrow">COME A LITTLE CLOSER</span>
-          <Link to="/story">Our story</Link>
-          <Link to="/journal">The sweet journal</Link>
-          <Link to="/store">Visit our store</Link>
-          <Link to="/policies">Delivery & returns</Link>
-        </div>
-        <div>
-          <span className="eyebrow">LET’S TALK SWEET</span>
-          <p>For celebrations big and small.</p>
-          <Link className="footer-contact" to="/store">
-            Get in touch <ArrowRight size={15} />
-          </Link>
-          <Link to="/account">Your account</Link>
-          <Link to="/admin">Store administration</Link>
-        </div>
+        {content.storefront.experience.footerColumns.map((column, i) => (
+          <div key={i}>
+            <span className="eyebrow">{column.title}</span>
+            {column.links.map((link, j) => (
+              <Link key={j} to={link.to}>
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        ))}
       </div>
       <div className="footer-bottom">
         <span>
           © {new Date().getFullYear()} {content.settings.name}
         </span>
-        <span>Rooted in Assam. Made with care.</span>
+        <span>{content.storefront.experience.footerSignature}</span>
         <span>
           {isDemo ? "Demo storefront · No real payments" : "Secure checkout"}
         </span>

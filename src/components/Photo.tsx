@@ -5,12 +5,14 @@ export function Photo({
   className = "",
   style,
   srcSet,
+  priority = false,
 }: {
   src: string;
   alt?: string;
   className?: string;
   style?: CSSProperties;
   srcSet?: string;
+  priority?: boolean;
 }) {
   const element = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
@@ -39,13 +41,22 @@ export function Photo({
         src={src}
         srcSet={
           srcSet ||
+          (/^\/api\/media\/catalogue\/[a-f\d-]+-1280\.webp$/.test(src)
+            ? [320, 640, 1280]
+                .map(
+                  (width) =>
+                    `${src.replace("-1280.webp", `-${width}.webp`)} ${width}w`,
+                )
+                .join(", ")
+            : undefined) ||
           (src === "/images/hero.webp"
             ? "/images/hero-small.webp 768w, /images/hero.webp 1536w"
             : undefined)
         }
         sizes="(max-width: 540px) 100vw, (max-width: 900px) 50vw, 33vw"
         alt={alt}
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
         decoding="async"
         width={600}
         height={600}
@@ -59,9 +70,10 @@ export function Photo({
       aria-label={alt || "Illustrative sweet photography"}
       className={`sweet-photo ${className}`}
       style={{
-        backgroundImage: visible
-          ? `image-set(url("${atlas.replace(".webp", "-small.webp")}") 1x, url("${atlas}") 2x)`
-          : undefined,
+        backgroundImage:
+          visible || priority
+            ? `image-set(url("${atlas.replace(".webp", "-small.webp")}") 1x, url("${atlas}") 2x)`
+            : undefined,
         backgroundPosition: `${(n % 2) * 100}% ${Math.floor(n / 2) * 100}%`,
         ...style,
       }}

@@ -1,3 +1,7 @@
+import {
+  storefrontExtra,
+  defaultBoxSizes,
+} from "../../shared/storefront-extra";
 import { homeContent } from "../../shared/home-content";
 import { db } from "../../server/supabase";
 import { endpoint, response, rpcError } from "../../server/http";
@@ -34,7 +38,9 @@ export const onRequestGet = endpoint(async (ctx) => {
   rpcError(cats.error);
   const res = response({
     storefront: {
+      ...storefrontExtra,
       ...values.storefront,
+      pages: { ...storefrontExtra.pages, ...values.storefront.pages },
       home: { ...homeContent, ...values.storefront.home },
     },
     operations: values.operations,
@@ -49,6 +55,7 @@ export const onRequestGet = endpoint(async (ctx) => {
         values.public.pickupInstructions,
     },
     commerce: {
+      boxSizes: values.commerce.boxSizes || defaultBoxSizes,
       boxFee: values.commerce.boxFee,
       wrapFee: values.commerce.wrapFee,
       freeShipping: values.commerce.freeShipping,

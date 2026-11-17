@@ -17,3 +17,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Browser and accessibility checks
         run: npm run test:e2e
+      - name: Non-demo browser flows
+        run: npm run test:e2e:live
+      - name: Validate auxiliary Cloudflare Workers
+        run: |
+          npx wrangler deploy --dry-run --config wrangler.images.toml --outdir /tmp/bapi-images
+          npx wrangler deploy --dry-run --config wrangler.maintenance.toml --outdir /tmp/bapi-maintenance

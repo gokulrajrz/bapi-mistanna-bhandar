@@ -7,6 +7,7 @@ import {
   response,
   HttpError,
   throttle,
+  rpcError,
 } from "../../../server/http";
 import { sessionCookies } from "../../../server/auth";
 export const onRequestPost = endpoint(async (ctx) => {
@@ -29,6 +30,13 @@ export const onRequestPost = endpoint(async (ctx) => {
       400,
       "That code is invalid or expired. Please request a new one.",
     );
+  const profile = await db(ctx.env)
+    .from("customer_profiles")
+    .upsert(
+      { user_id: data.user!.id },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
+  rpcError(profile.error);
   const res = response({ signedIn: true });
   for (const cookie of sessionCookies(ctx.request, data.session))
     res.headers.append("Set-Cookie", cookie);
